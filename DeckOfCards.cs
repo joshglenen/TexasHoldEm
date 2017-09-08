@@ -12,7 +12,7 @@ namespace TexasHoldEm
         {
             this.Value = Value; this.Suit = Suit; this.Asset = Asset;
         }
-    }
+    } //saves memory
 
     class DeckOfCards 
     {
@@ -60,17 +60,8 @@ namespace TexasHoldEm
                 Deck[i] = new CardBase(v, "Clubs", str);
                 i++;
             }
-
-           // for (int v = 0; v < 52; v++)
-           // {
-           //     if (Deck[v].Value >= 11)
-           //     {
-           //         Deck[v].Special = true;
-           //     }
-           // }
-
             KnuthShuffle<CardBase>(Deck);
-        }
+        } //constructor
 
         public CardBase DrawTop()
         {
@@ -91,7 +82,7 @@ namespace TexasHoldEm
             }
 
             throw new Exception("DrawTop will not draw from an empty deck!");
-        }
+        }  //draws last element in array
 
         private static void KnuthShuffle<T>(T[] array)
         {
@@ -101,12 +92,12 @@ namespace TexasHoldEm
                 int j = random.Next(i, array.Length); // Don't select from the entire array on subsequent loops
                 T temp = array[i]; array[i] = array[j]; array[j] = temp;
             }
-        }
+        } //interior code
 
         public void Shuffle()
         {
             KnuthShuffle<CardBase>(Deck);
-        }
+        } //random shuffle
         
         public override string ToString()
         {
@@ -116,7 +107,7 @@ namespace TexasHoldEm
                 temp += card.Value + " " + card.Suit + ", ";
             }
             return temp;
-        }
+        } //debug
 
         public void AddJoker()
         {
@@ -129,7 +120,7 @@ namespace TexasHoldEm
             {
                 throw new Exception("Cannot add joker");
             }
-        }
+        } //TODO
 
     }
 

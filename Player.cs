@@ -11,7 +11,6 @@
         private int Funds { get; set; }
         private CardBase[] myHand = new CardBase[NumCards];
 
-
         public Player(string name)
         {
             Name = name;
@@ -21,32 +20,29 @@
         public void DrawCard(CardBase Card)
         {
             myHand[HandIndex] = Card;
+        } 
+
+        public int CheckPoints()
+        {
+            if (Bet == 0) return 0;
+            
+
+
         }
 
-        public void NewHand()
+        public void ResetHand()
         {
             myHand = new CardBase[NumCards];
             HandIndex = 0;
             Bet = 0;
-        }
+        } //clear array and reset attributes
 
-        public bool NewBet(int bet)
+        public bool NewBet(int bet) 
         {
             if (bet <= Funds)
             {
-                if (Bet == 0)
-                {
-                    Bet = bet;
-                    Funds -= bet;
-
-                }
-
-                else
-                {
-                    Bet += bet;
-                    Funds -= bet;
-                }
-
+                Bet += bet;
+                Funds -= bet;
                 return true;
             }
 
@@ -54,13 +50,13 @@
             {
                 return false;
             }
-        }
 
-        public void CashIn(int Multiplier = 2)
+        } //takes initial bet or raise, changes class attributes, and returns success boolean
+
+        public void CashIn(int Multiplier = 1)
         {
             Bet = Bet * Multiplier;
             Funds += Bet;
-            NewHand();
-        }
+        } //add winnings to funds
     }
 }
