@@ -8,9 +8,11 @@ using System.Drawing;
 using System.Windows.Media;
 using System.Diagnostics;
 
+
 #region References
 //https://en.wikipedia.org/wiki/Texas_hold_%27em#Strategy
 #endregion
+
 
 namespace TexasHoldEm
 {
@@ -18,7 +20,12 @@ namespace TexasHoldEm
     {
         DeckOfCards myDeck;
         Player[] myPlayers;
+        Player myDealer;
+       
         int numberOfPlayers = 2;
+        int startingPlayer = 0;
+        int stageOfPlay = 0;
+        int mostRecentRaise = 0;
 
         public MainWindow()
         {
@@ -30,19 +37,60 @@ namespace TexasHoldEm
         {
             myDeck = new DeckOfCards();
             myPlayers = new Player[numberOfPlayers];
-            myPlayers[0] = new Player("House");
-            myPlayers[1] = new Player("Me");
+            myDealer = new Player("Dealer", 5);
+            myPlayers[0] = new Player("Mark");
+            myPlayers[1] = new Player("Jenny");
         }
 
 
 #region Window Methods
-#endregion
+
+
+
+        #endregion
+
 
 #region state machine
 
+        private void Button_Click_Fold(object sender, RoutedEventArgs e)
+        {
+            if ((stageOfPlay != 2) || (stageOfPlay != 3)) return;
+            stageOfPlay = 0;
+            Fold(0);
+            FinishAuto();
+        }
+
+        private void Button_Click_Hold(object sender, RoutedEventArgs e)
+        {
+            if (stageOfPlay != 2) return;
+            stageOfPlay = 1;
+            mostRecentRaise = 0;
+        }
+
+        private void Button_Click_Match(object sender, RoutedEventArgs e)
+        {
+            if (stageOfPlay != 3) return;
+            stageOfPlay = 1;
+            myPlayers[0].RaiseBet(mostRecentRaise);
+        }
+
+        private void Button_Click_Raise(object sender, RoutedEventArgs e)
+        {
+            if (stageOfPlay != 2) return;
+            stageOfPlay = 3;
+            Int32.TryParse(myRaise.Text, out mostRecentRaise);
+        }
+
+        private void Button_Click_NewHand(object sender, RoutedEventArgs e)
+        {
+            if (stageOfPlay != 0) return;
+            stageOfPlay = 1;
+            NewHand();
+        }
 
 
 #endregion
+
 
 #region Game Methods
 
@@ -51,6 +99,8 @@ namespace TexasHoldEm
             foreach(Player player in myPlayers)
             {
                 player.ResetHand();
+                player.DrawCard(myDeck.DrawTop());
+                player.DrawCard(myDeck.DrawTop());
             }
         }
 
@@ -62,61 +112,117 @@ namespace TexasHoldEm
 
         public void Fold(int player, int multiplier = 2)
         {
-            myPlayers[player].CashIn(0);
+            myPlayers[player].Fold();
 
-            //check if 
+            //check if one left
             int k = 0;
             int winner = -1;
-            for(int i=0; i<numberOfPlayers-1; i++)
+            for (int i = 0; i < numberOfPlayers; i++)
             {
-                if (myPlayers[i].Bet != 0)
+                if (myPlayers[i].Playing == true) { k++; winner = i; }
+            }
+            if (k == 1) EndHand(winner);
+        }
+
+        public int[] GetScores()
+        {
+            int winner = 0;
+            int winningScore = 0;
+            int scoreBuffer = 0;
+            int[] scores = new int[myPlayers.Length+1];
+            List<int> valueBuffer = myDealer.GetValues().ToList();
+            List<string> suitBuffer = myDealer.GetSuits().ToList();
+
+            for (int i = 0; i < myPlayers.Length; i++)
+            {
+                //combine dealer and players hand
+                valueBuffer.AddRange(myPlayers[i].GetValues().ToList());
+                suitBuffer.AddRange(myPlayers[i].GetSuits().ToList());
+
+                //determine winning score
+                scoreBuffer = PokerHandValue.Calculate(valueBuffer.ToArray(),suitBuffer.ToArray());
+                if (winningScore < scoreBuffer)
                 {
-                    k++; winner = i;
+                    winningScore = scoreBuffer;
+                    winner = i;
+                }
+                scores[i+1] = scoreBuffer;
+            }
+            scores[0] = winner;
+            return scores;
+
+        } //returns an array with 0 as winner id, and 1-x as player 0-x's scores
+
+        public void EndHand(int foldWinner = -1)
+        {
+
+            Debug.WriteLine(myPlayers.Length.ToString());
+            int[] scores = new int[myPlayers.Length + 1];
+            if (foldWinner == -1)
+            {
+                scores = GetScores();
+            }
+            else
+            {
+                scores[foldWinner] = 100;
+                for (int i = 0; i < myPlayers.Length; i++)
+                {
+                    if (i != foldWinner) scores[i] = 0;
                 }
             }
-            if ((k == 1)&&(winner >= 0)) EndHand(winner);
-        }
+            //string NameOfWinner = myPlayers[scores[0]].Name;
+            //TODO: ADD win screen
 
-        public void CheckWinner()
-        {
-            int winner = -1;
-            int maxPoints = 0;
-            for(int i=0; i<numberOfPlayers; i++)
-            {
-                if(maxPoints < myPlayers[i].CheckPoints())
-                 maxPoints = myPlayers[i].CheckPoints();
-            }
-            EndHand(winner);
-        }
-
-        public void EndHand(int winner)
-        {
-            string NameOfWinner = myPlayers[winner].Name;
             int Pool = 0;
             foreach(Player player in myPlayers)
             {
                 Pool += player.Bet;
             }
-            myPlayers[winner].Bet = Pool;
-            myPlayers[winner].CashIn();                 //TODO: ADD MULTIPLIER FUNCTION OR REMOVE IT
+            myPlayers[scores[0]].NewBet(Pool);
+            myPlayers[scores[0]].CashIn();                 //TODO: ADD MULTIPLIER FUNCTION OR REMOVE IT
+            
+        }
 
-            myDeck = null;
-            myPlayers = null;
+        public void FinishAuto()
+        {
+            EndHand();
         }
 
 #endregion
 
+
 #region Probability Methods
 
+        public double GetHandProbability(int[] values, string[] suits) //determines the odds of the hand given to win
+        {
+            return 0;
+
+        } 
 
 
 #endregion
+         
 
 #region Menu Methods
 
+        public void LoadGameSettings() //generates a form with {numplayers, starting funds}
+        {
 
+        }
+        
+        public void LoadAppHistory() //checks for first time, history, leaderboards
+        {
 
-#endregion
+        }
+
+        public void NewGame() //load players, ui, and start first hand
+        {
+
+        }
+
+        #endregion
+        
+       
     }
 }
 

@@ -19,13 +19,12 @@ namespace TexasHoldEm
         
         private string pathToDir;
 
-        public CardBase[] Deck;
+        public CardBase[] Deck { get; private set;}
 
         public DeckOfCards()
         {
             pathToDir = System.IO.Path.GetDirectoryName(System.Reflection.Assembly.GetExecutingAssembly().Location) + "\\Assets\\";
             
-           
             Deck = new CardBase[52];
             int i = 0;
             for (int v = 1; v < 14; v++)
@@ -108,19 +107,6 @@ namespace TexasHoldEm
             }
             return temp;
         } //debug
-
-        public void AddJoker()
-        {
-            try
-            {
-                Array.Resize<CardBase>(ref Deck, Deck.Length + 1);
-                Deck[Deck.Length-1] = new CardBase(0, "Joker", null); //TODO
-            }
-            catch
-            {
-                throw new Exception("Cannot add joker");
-            }
-        } //TODO
 
     }
 
