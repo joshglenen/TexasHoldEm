@@ -12,14 +12,14 @@ namespace TexasHoldEm
         {
             this.Value = Value; this.Suit = Suit; this.Asset = Asset;
         }
-    } //saves memory
+    } //saves memory TODO: re-declare asset location
 
     class DeckOfCards 
     {
         
         private string pathToDir;
 
-        public CardBase[] Deck { get; private set;}
+        public CardBase[] Deck {get; protected set;}
 
         public DeckOfCards()
         {
@@ -62,10 +62,16 @@ namespace TexasHoldEm
             KnuthShuffle<CardBase>(Deck);
         } //constructor
 
-        public CardBase DrawTop()
+        protected CardBase DrawTop()
         {
-            if(Deck.Length>0)
+            if (Deck.Length <= 0)
             {
+                DeckOfCards Buffer = new DeckOfCards();
+                Deck = Buffer.Deck;
+                Console.WriteLine("ERROR: NEW DECK CREATED");
+
+            } 
+
                 CardBase Card = Deck[Deck.Length - 1];
 
                 CardBase[] Temp = new CardBase[Deck.Length - 1];
@@ -76,11 +82,8 @@ namespace TexasHoldEm
                 }
 
                 Deck = Temp;
-
                 return Card;
-            }
 
-            throw new Exception("DrawTop will not draw from an empty deck!");
         }  //draws last element in array
 
         private static void KnuthShuffle<T>(T[] array)
@@ -93,7 +96,7 @@ namespace TexasHoldEm
             }
         } //interior code
 
-        public void Shuffle()
+        protected void Shuffle()
         {
             KnuthShuffle<CardBase>(Deck);
         } //random shuffle
@@ -109,5 +112,4 @@ namespace TexasHoldEm
         } //debug
 
     }
-
 }

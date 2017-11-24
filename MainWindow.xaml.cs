@@ -1,12 +1,14 @@
 ﻿using System.Windows;
 using System;
+using TexasHoldEm;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices.WindowsRuntime;
 using System.Drawing;
-using System.Windows.Media;
+using System.Windows.Media;  
 using System.Diagnostics;
+using System.Windows.Media.Imaging;
 
 
 #region References
@@ -18,190 +20,167 @@ namespace TexasHoldEm
 {
     public partial class MainWindow : Window
     {
-        DeckOfCards myDeck;
-        Player[] myPlayers;
-        Player myDealer;
-       
-        int numberOfPlayers = 2;
-        int startingPlayer = 0;
-        int stageOfPlay = 0;
-        int mostRecentRaise = 0;
+        Game myGame;
+        string Stage = null;
+        int raiseAmount = 0;
 
         public MainWindow()
         {
             InitializeComponent();
             InitializePlayers();
         }
-
         private void InitializePlayers()
         {
-            myDeck = new DeckOfCards();
-            myPlayers = new Player[numberOfPlayers];
-            myDealer = new Player("Dealer", 5);
-            myPlayers[0] = new Player("Mark");
-            myPlayers[1] = new Player("Jenny");
+            //TODO: collect data from xml instead
+            string[] args = { "Jason", "Annie","Oswald" , "Cooper"};
+            int numPlayers = 4;
+            int funds = 100;
+
+            myGame = new Game(args, 5, numPlayers, funds);
         }
 
-
-#region Window Methods
-
-
-
-        #endregion
 
 
 #region state machine
 
         private void Button_Click_Fold(object sender, RoutedEventArgs e)
         {
-            if ((stageOfPlay != 2) || (stageOfPlay != 3)) return;
-            stageOfPlay = 0;
-            Fold(0);
-            FinishAuto();
+            if ((Stage == "Match or Fold") || (Stage == "Raise or Hold or Fold"))
+            {
+                int k = 0;
+                foreach (Player player in myGame.Players)
+                {
+                    if (player.Playing) { k++; }
+                }
+                if (k == 2)
+                {
+                    Stage = null;
+                }
+
+                myGame.TakeTurn("Fold");
+                Stage = "Fold";
+                WaitForAI();
+            }
         }
 
         private void Button_Click_Hold(object sender, RoutedEventArgs e)
         {
-            if (stageOfPlay != 2) return;
-            stageOfPlay = 1;
-            mostRecentRaise = 0;
+
+            if (Stage == "Raise or Hold or Fold")
+            {
+                myGame.TakeTurn();
+                Stage = "Hold";
+                WaitForAI();
+            }
         }
 
         private void Button_Click_Match(object sender, RoutedEventArgs e)
         {
-            if (stageOfPlay != 3) return;
-            stageOfPlay = 1;
-            myPlayers[0].RaiseBet(mostRecentRaise);
+            if (Stage == "Match or Fold")
+            {
+                myGame.TakeTurn("Match");
+                Stage = "Match";
+                WaitForAI();
+            }
         }
 
         private void Button_Click_Raise(object sender, RoutedEventArgs e)
         {
-            if (stageOfPlay != 2) return;
-            stageOfPlay = 3;
-            Int32.TryParse(myRaise.Text, out mostRecentRaise);
+            if (Stage == "Raise or Hold or Fold")
+            {
+                if ((raiseAmount <= 0) || (raiseAmount > myGame.Players[0].Funds))
+                {
+                    Console.WriteLine( "Dealer won't accept your bet!");
+                    return;
+                }
+                myGame.TakeTurn("Raise",0, raiseAmount);
+                Stage = "Raise";
+                WaitForAI();
+            }
         }
 
         private void Button_Click_NewHand(object sender, RoutedEventArgs e)
         {
-            if (stageOfPlay != 0) return;
-            stageOfPlay = 1;
-            NewHand();
-        }
-
-
-#endregion
-
-
-#region Game Methods
-
-        public void NewHand()
-        {
-            foreach(Player player in myPlayers)
+            if (imgDealer5.Source != null)
             {
-                player.ResetHand();
-                player.DrawCard(myDeck.DrawTop());
-                player.DrawCard(myDeck.DrawTop());
+                imgDealer5.Source = new BitmapImage();
+                imgDealer4.Source = new BitmapImage();
+                imgDealer3.Source = new BitmapImage();
+            }
+
+            if ((Stage == "End") || (Stage == null))
+            {
+                myGame.TakeTurn("New Hand");
+
+                imgDealer1.Source = new BitmapImage(new Uri(@myGame.Dealer.myHand[0].Asset));
+                imgDealer2.Source = new BitmapImage(new Uri(@myGame.Dealer.myHand[1].Asset));
+                imgMain1.Source = new BitmapImage(new Uri(@myGame.Players[0].myHand[0].Asset));
+                imgMain2.Source = new BitmapImage(new Uri(@myGame.Players[0].myHand[1].Asset));
+                imgONE1.Source = new BitmapImage(new Uri(@myGame.Players[1].myHand[0].Asset));
+                imgONE2.Source = new BitmapImage(new Uri(@myGame.Players[1].myHand[1].Asset));
+
+                if(myGame.numPlayers>2)
+                {
+                    imgTWO1.Source = new BitmapImage(new Uri(@myGame.Players[1].myHand[0].Asset));
+                    imgTWO2.Source = new BitmapImage(new Uri(@myGame.Players[1].myHand[1].Asset));
+                }
+
+                if (myGame.numPlayers > 3)
+                {
+                    imgTHREE1.Source = new BitmapImage(new Uri(@myGame.Players[1].myHand[0].Asset));
+                    imgTHREE2.Source = new BitmapImage(new Uri(@myGame.Players[1].myHand[1].Asset));
+                }
+
+                Stage = "Raise or Hold or Fold";
             }
         }
 
-        public void DrawCard(int player)
+        private void DealerDrawNext()
         {
-            CardBase myCard = myDeck.DrawTop();
-            myPlayers[player].DrawCard(myCard);
+            myGame.DrawCard(-1);
+            switch (myGame.Dealer.HandIndex)
+            {
+             
+                case 3:
+                    imgDealer3.Source = new BitmapImage(new Uri(@myGame.Dealer.myHand[2].Asset));
+                    break;
+
+                case 4:
+                    imgDealer4.Source = new BitmapImage(new Uri(@myGame.Dealer.myHand[3].Asset));
+                    break;
+
+                case 5:
+                    imgDealer5.Source = new BitmapImage(new Uri(@myGame.Dealer.myHand[4].Asset));
+                    myGame.EndGame();
+                    Stage = null;
+                    break;
+            }
         }
 
-        public void Fold(int player, int multiplier = 2)
+        private void WaitForAI()
         {
-            myPlayers[player].Fold();
 
-            //check if one left
+        Console.WriteLine(myGame.Players[1].Playing.ToString());
+        Stage  = TexasAI.TexasStateMachineForAI(Stage);
+        if (Stage == "Raise or Hold or Fold") { DealerDrawNext();}
+
+        //AI must continue if player stops playing.
+        if(!myGame.Players[0].Playing)
+        {
+
             int k = 0;
-            int winner = -1;
-            for (int i = 0; i < numberOfPlayers; i++)
+            foreach(Player player in myGame.Players)
             {
-                if (myPlayers[i].Playing == true) { k++; winner = i; }
+                 if (player.Playing) { k++; }
             }
-            if (k == 1) EndHand(winner);
+                if ((k!=0)&&(myGame.Dealer.HandIndex<=4))
+            {
+                WaitForAI();
+            }
         }
-
-        public int[] GetScores()
-        {
-            int winner = 0;
-            int winningScore = 0;
-            int scoreBuffer = 0;
-            int[] scores = new int[myPlayers.Length+1];
-            List<int> valueBuffer = myDealer.GetValues().ToList();
-            List<string> suitBuffer = myDealer.GetSuits().ToList();
-
-            for (int i = 0; i < myPlayers.Length; i++)
-            {
-                //combine dealer and players hand
-                valueBuffer.AddRange(myPlayers[i].GetValues().ToList());
-                suitBuffer.AddRange(myPlayers[i].GetSuits().ToList());
-
-                //determine winning score
-                scoreBuffer = PokerHandValue.Calculate(valueBuffer.ToArray(),suitBuffer.ToArray());
-                if (winningScore < scoreBuffer)
-                {
-                    winningScore = scoreBuffer;
-                    winner = i;
-                }
-                scores[i+1] = scoreBuffer;
-            }
-            scores[0] = winner;
-            return scores;
-
-        } //returns an array with 0 as winner id, and 1-x as player 0-x's scores
-
-        public void EndHand(int foldWinner = -1)
-        {
-
-            Debug.WriteLine(myPlayers.Length.ToString());
-            int[] scores = new int[myPlayers.Length + 1];
-            if (foldWinner == -1)
-            {
-                scores = GetScores();
-            }
-            else
-            {
-                scores[foldWinner] = 100;
-                for (int i = 0; i < myPlayers.Length; i++)
-                {
-                    if (i != foldWinner) scores[i] = 0;
-                }
-            }
-            //string NameOfWinner = myPlayers[scores[0]].Name;
-            //TODO: ADD win screen
-
-            int Pool = 0;
-            foreach(Player player in myPlayers)
-            {
-                Pool += player.Bet;
-            }
-            myPlayers[scores[0]].NewBet(Pool);
-            myPlayers[scores[0]].CashIn();                 //TODO: ADD MULTIPLIER FUNCTION OR REMOVE IT
-            
-        }
-
-        public void FinishAuto()
-        {
-            EndHand();
         }
 
 #endregion
-
-
-#region Probability Methods
-
-        public double GetHandProbability(int[] values, string[] suits) //determines the odds of the hand given to win
-        {
-            return 0;
-
-        } 
-
-
-#endregion
-         
 
 #region Menu Methods
 
@@ -220,9 +199,14 @@ namespace TexasHoldEm
 
         }
 
-        #endregion
-        
-       
+#endregion
+
+
+//Interrupts
+private void myRaise_TextChanged(object sender, System.Windows.Controls.TextChangedEventArgs e)
+        {
+            Int32.TryParse(myRaise.Text, out raiseAmount);
+        } //Raise Textbox Ultrafast Input Updater
     }
 }
 

@@ -1,5 +1,4 @@
 ﻿using System.Collections.Generic;
-using System.Diagnostics;
 using System.Linq;
 
 namespace TexasHoldEm
@@ -64,7 +63,7 @@ namespace TexasHoldEm
             int[] check = CheckForPairs(args);
             if (check[0] + check[2] == 5) return true;
             return false;
-        }
+        } 
 
         public static int CheckHighCard(int[] args)
         {
@@ -79,13 +78,23 @@ namespace TexasHoldEm
             if (sortedArgs.SequenceEqual(specialCase)) return true;
             return false;
         }
-        
+
         /// <summary>
         /// Calculates the value of a poker hand of five cards
         /// </summary>
         /// <param name="values">The value of each card in hand where ace is one and king is 13</param>
         /// <param name="suits">The name of one of four suits; names must be consistant</param>
         /// <returns>The value which can be compared to other values of different hands to find the winning hand</returns>
+        ///<vals>
+        ///high 14
+        ///one pair high 2 130 000
+        ///two pair high 4 131 300 
+        ///3oKind high 5 130 000
+        ///straight  6 000 000
+        ///flush 7 000 000
+        ///fokinf high 8 130 000
+        ///royal	100 000 000
+        ///</vals>
         public static int Calculate(int[] values, string[] suits)
         {
             int handValue = 0;
