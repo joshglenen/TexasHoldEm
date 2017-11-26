@@ -13,7 +13,7 @@ namespace TexasHoldEm
         public int Funds { get; private set; }
 
         //internal variables
-        public CardBase[] myHand { get; private set; }
+        public CardBase[] _myHand { get; private set; }
         public int HandIndex {get; private set;}
         public bool Playing;
         public bool AllIn;
@@ -29,9 +29,9 @@ namespace TexasHoldEm
         public int[] GetValues()
         {
             int[] buffer = new int[5];
-            for (int i = 0; i < myHand.Length; i++)
+            for (int i = 0; i < _myHand.Length; i++)
             {
-                buffer[i] = myHand[i].Value;
+                buffer[i] = _myHand[i].Value;
             }
             return buffer;
         }
@@ -39,16 +39,16 @@ namespace TexasHoldEm
         public string[] GetSuits()
         {
             string[] buffer = new string[5];
-            for (int i = 0; i < myHand.Length; i++)
+            for (int i = 0; i < _myHand.Length; i++)
             {
-                buffer[i] = myHand[i].Suit;
+                buffer[i] = _myHand[i].Suit;
             }
             return buffer;
         }
 
         public void DrawCard(CardBase Card)
         {
-            myHand[HandIndex] = Card;
+            _myHand[HandIndex] = Card;
             HandIndex++;
         }
 
@@ -56,7 +56,7 @@ namespace TexasHoldEm
         {
             Playing = true;
             AllIn = false;
-            myHand = new CardBase[NumCards];
+            _myHand = new CardBase[NumCards];
             HandIndex = 0;
             Bet = 0;
         } //clear array and reset attributes
@@ -104,7 +104,7 @@ namespace TexasHoldEm
 
         public void Fold()
         {
-            myHand = null;
+            _myHand = null;
             Playing = false;
             AllIn = false;
         }
@@ -125,17 +125,20 @@ namespace TexasHoldEm
         public Player[] Players;
         public Player Dealer;
         public int numPlayers;
+        public int gameNumber;
         #endregion
 
 #region game vars
-        public int pool { get; private set; }
-        public int lastBet { get; private set; }
-        public int raisePlayerIndex;
+        public int _pool { get; private set; }
+        public int _lastBet { get; private set; }
+        public int _raisePlayerIndex;
 #endregion
 
 #region Beginning of game
+
         public Game(string[] names = null, int numCards = 5, int NumPlayers = 2, int funds = 100)
         {
+            gameNumber = -1;
             Players = new Player[NumPlayers];
             Dealer = new Player("Dealer", 5, 0);
             numPlayers = NumPlayers;
@@ -144,17 +147,17 @@ namespace TexasHoldEm
                 Players[i] = new Player(names[i], numCards, funds);
             }
             NewGame();
-
         }
         /// <summary>
         /// Resets game variables within a session of games. Specific to texas holdem. 
         /// </summary>
         public void NewGame()
         {
+            gameNumber++;
             NewDeck();
-            pool = 0;
-            lastBet = 0;
-            raisePlayerIndex = 0;
+            _pool = 0;
+            _lastBet = 0;
+            _raisePlayerIndex = 0;
 
             foreach (Player player in Players)
             {
@@ -217,7 +220,7 @@ namespace TexasHoldEm
         /// <param name="stage">Input of user: Pass,Raise,Match,Fold,New Hand</param>
         /// <param name="playerIndex">Player in Players</param>
         /// <param name="bet">Amount if raising bet, not required</param>
-        /// <returns>checks if the player </returns>
+        /// <returns>checks when all players have responded to a raise</returns>
         public bool TakeTurn(string stage = "Pass", int playerIndex = 0, int bet = 0)
         {
             switch (stage)
@@ -227,7 +230,7 @@ namespace TexasHoldEm
 
                 case "Raise":
                     if (Players[playerIndex].AllIn) break; //all in's cant raise.
-                    raisePlayerIndex = playerIndex;
+                    _raisePlayerIndex = playerIndex;
                     RaiseBet(playerIndex, bet);
                     break;
 
@@ -236,7 +239,7 @@ namespace TexasHoldEm
                     int i = playerIndex;
                     if (i == numPlayers) i = 0;
                     else i++;
-                    return i == raisePlayerIndex; //check if all players have reacted to the raise bet
+                    return i == _raisePlayerIndex; //check if all players have reacted to the raise bet
 
                 case "Fold":
 
@@ -253,13 +256,13 @@ namespace TexasHoldEm
         private void RaiseBet(int playerIndex, int amount)
         {
             Players[playerIndex].RaiseBet(amount);
-            pool += amount;
-            lastBet = amount;
+            _pool += amount;
+            _lastBet = amount;
         }
         public void MatchBet(int playerIndex)
         {
-            Players[playerIndex].RaiseBet(lastBet);
-            pool += lastBet;
+            Players[playerIndex].RaiseBet(_lastBet);
+            _pool += _lastBet;
         }
         public void Fold(int playerIndex)
         {
@@ -289,7 +292,7 @@ namespace TexasHoldEm
             scores = GetScores();
             string NameOfWinner = Players[scores[0]].Name;
 
-            Players[scores[0]].SetFunds(pool);
+            Players[scores[0]].SetFunds(_pool);
             foreach (Player player in Players)
             {
                 player.Playing = false;
@@ -305,25 +308,33 @@ namespace TexasHoldEm
             int winningScore = 0;
             int scoreBuffer = 0;
             int[] scores = new int[Players.Length + 1]; //zero is winner index of Players
-            List<int> valueBuffer = Dealer.GetValues().ToList();
-            List<string> suitBuffer = Dealer.GetSuits().ToList();
 
+            if (Dealer.HandIndex < 5) throw new Exception("Poker Hand Value only works with all five dealer cards! Need to revise this section or prevent this exception.");
+            
             for (int i = 0; i < Players.Length; i++)
             {
                 if (Players[i].Playing)
                 {
+
+                    List<int> valueBuffer = Dealer.GetValues().ToList();
+                    List<string> suitBuffer = Dealer.GetSuits().ToList();
+
                     //combine dealer and player hand 
                     valueBuffer.AddRange(Players[i].GetValues().ToList());
                     suitBuffer.AddRange(Players[i].GetSuits().ToList());
 
                     //determine winning score
-                    scoreBuffer = PokerHandValue.Calculate(valueBuffer.ToArray(), suitBuffer.ToArray());
+                    scoreBuffer = PokerHandValue.TexasHoldemCalculate(valueBuffer.ToArray(), suitBuffer.ToArray());
+                    Console.WriteLine("Player : " + i.ToString() + " has a score of " + scoreBuffer.ToString());
                     if (winningScore < scoreBuffer)
                     {
                         winningScore = scoreBuffer;
                         winner = i;
                     }
-                    else if (winningScore == scoreBuffer) { throw new Exception("TIE NOT IMPLEMENTED"); } //TODO
+                    else if ((winningScore == scoreBuffer) && (i < 0))
+                    {
+                        Console.WriteLine("Player.cs -> getscores -> Possible tie");
+                    }
 
                     //update buffer
                     scores[i + 1] = scoreBuffer;

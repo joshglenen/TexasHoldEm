@@ -1,6 +1,5 @@
 ﻿using System.Windows;
 using System;
-using TexasHoldEm;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -21,13 +20,19 @@ namespace TexasHoldEm
     public partial class MainWindow : Window
     {
         Game myGame;
-        string Stage = null;
+        TexasAI myAI;
+
+        private string _stage = null;
+        public string Stage { get { return _stage; } set { _stage = value; Console.WriteLine("Stage now set to: " + _stage); } }
+
         int raiseAmount = 0;
 
         public MainWindow()
         {
             InitializeComponent();
             InitializePlayers();
+            TextBlock_CurrentPlayerName.Text = myGame.Players[0].Name;
+            TextBlock_GameNumberCounter.Text = "Game 1";
         }
         private void InitializePlayers()
         {
@@ -36,8 +41,14 @@ namespace TexasHoldEm
             int numPlayers = 4;
             int funds = 100;
 
+            myAI = new TexasAI();
+
             myGame = new Game(args, 5, numPlayers, funds);
+            
+
+
         }
+
 
 
 
@@ -65,7 +76,6 @@ namespace TexasHoldEm
 
         private void Button_Click_Hold(object sender, RoutedEventArgs e)
         {
-
             if (Stage == "Raise or Hold or Fold")
             {
                 myGame.TakeTurn();
@@ -78,8 +88,13 @@ namespace TexasHoldEm
         {
             if (Stage == "Match or Fold")
             {
-                myGame.TakeTurn("Match");
                 Stage = "Match";
+                //Triggers when all players have responded to a raise.
+                if (myGame.TakeTurn("Match"))
+                {
+                    Stage = "Raise or Hold or Fold";
+                    myAI.PlayerHasRaised = false;
+                }
                 WaitForAI();
             }
         }
@@ -88,6 +103,7 @@ namespace TexasHoldEm
         {
             if (Stage == "Raise or Hold or Fold")
             {
+                //Checks if raise is appropriate.
                 if ((raiseAmount <= 0) || (raiseAmount > myGame.Players[0].Funds))
                 {
                     Console.WriteLine( "Dealer won't accept your bet!");
@@ -101,73 +117,64 @@ namespace TexasHoldEm
 
         private void Button_Click_NewHand(object sender, RoutedEventArgs e)
         {
-            if (imgDealer5.Source != null)
-            {
-                imgDealer5.Source = new BitmapImage();
-                imgDealer4.Source = new BitmapImage();
-                imgDealer3.Source = new BitmapImage();
-            }
-
+            //generates a new hand and populates image frames.
             if ((Stage == "End") || (Stage == null))
             {
+
+                //clears extra image frames when starting a new game if a game had previously been played in a session.
+                if (imgDealer5.Source != null)
+                {
+                    imgDealer5.Source = new BitmapImage();
+                    imgDealer4.Source = new BitmapImage();
+                    imgDealer3.Source = new BitmapImage();
+                }
+
+                //update Game class
                 myGame.TakeTurn("New Hand");
 
-                imgDealer1.Source = new BitmapImage(new Uri(@myGame.Dealer.myHand[0].Asset));
-                imgDealer2.Source = new BitmapImage(new Uri(@myGame.Dealer.myHand[1].Asset));
-                imgMain1.Source = new BitmapImage(new Uri(@myGame.Players[0].myHand[0].Asset));
-                imgMain2.Source = new BitmapImage(new Uri(@myGame.Players[0].myHand[1].Asset));
-                imgONE1.Source = new BitmapImage(new Uri(@myGame.Players[1].myHand[0].Asset));
-                imgONE2.Source = new BitmapImage(new Uri(@myGame.Players[1].myHand[1].Asset));
-
+                //load cards
+                imgDealer1.Source = new BitmapImage(new Uri(@myGame.Dealer._myHand[0].Asset));
+                imgDealer2.Source = new BitmapImage(new Uri(@myGame.Dealer._myHand[1].Asset));
+                imgMain1.Source = new BitmapImage(new Uri(@myGame.Players[0]._myHand[0].Asset));
+                imgMain2.Source = new BitmapImage(new Uri(@myGame.Players[0]._myHand[1].Asset));
+                imgONE1.Source = new BitmapImage(new Uri(@myGame.Players[1]._myHand[0].Asset));
+                imgONE2.Source = new BitmapImage(new Uri(@myGame.Players[1]._myHand[1].Asset));
                 if(myGame.numPlayers>2)
                 {
-                    imgTWO1.Source = new BitmapImage(new Uri(@myGame.Players[1].myHand[0].Asset));
-                    imgTWO2.Source = new BitmapImage(new Uri(@myGame.Players[1].myHand[1].Asset));
+                    imgTWO1.Source = new BitmapImage(new Uri(@myGame.Players[2]._myHand[0].Asset));
+                    imgTWO2.Source = new BitmapImage(new Uri(@myGame.Players[2]._myHand[1].Asset));
                 }
-
                 if (myGame.numPlayers > 3)
                 {
-                    imgTHREE1.Source = new BitmapImage(new Uri(@myGame.Players[1].myHand[0].Asset));
-                    imgTHREE2.Source = new BitmapImage(new Uri(@myGame.Players[1].myHand[1].Asset));
+                    imgTHREE1.Source = new BitmapImage(new Uri(@myGame.Players[3]._myHand[0].Asset));
+                    imgTHREE2.Source = new BitmapImage(new Uri(@myGame.Players[3]._myHand[1].Asset));
+                }
+                if (myGame.numPlayers > 4)
+                {
+                    throw new Exception("Only supports 4 players");
                 }
 
+                //update window
+                TextBlock_GameNumberCounter.Text = "Game " + myGame.gameNumber.ToString();
+
+                //Start game
                 Stage = "Raise or Hold or Fold";
+                WaitForAI();
             }
-        }
 
-        private void DealerDrawNext()
-        {
-            myGame.DrawCard(-1);
-            switch (myGame.Dealer.HandIndex)
-            {
-             
-                case 3:
-                    imgDealer3.Source = new BitmapImage(new Uri(@myGame.Dealer.myHand[2].Asset));
-                    break;
 
-                case 4:
-                    imgDealer4.Source = new BitmapImage(new Uri(@myGame.Dealer.myHand[3].Asset));
-                    break;
-
-                case 5:
-                    imgDealer5.Source = new BitmapImage(new Uri(@myGame.Dealer.myHand[4].Asset));
-                    myGame.EndGame();
-                    Stage = null;
-                    break;
-            }
         }
 
         private void WaitForAI()
         {
-
-        Console.WriteLine(myGame.Players[1].Playing.ToString());
-        Stage  = TexasAI.TexasStateMachineForAI(Stage);
-        if (Stage == "Raise or Hold or Fold") { DealerDrawNext();}
+        Stage  = myAI.TexasStateMachineForAI(Stage, myGame);
+        if (Stage == null) { Stage = "Raise or Hold or Fold"; }
+        else if (Stage == "Raise or Hold or Fold") { DealerDrawNext();}
 
         //AI must continue if player stops playing.
         if(!myGame.Players[0].Playing)
         {
-
+            //waits until all dealer cards are drawn or all but one players have folded.
             int k = 0;
             foreach(Player player in myGame.Players)
             {
@@ -180,7 +187,29 @@ namespace TexasHoldEm
         }
         }
 
-#endregion
+        private void DealerDrawNext()
+        {
+            myGame.DrawCard(-1);
+            switch (myGame.Dealer.HandIndex)
+            {
+
+                case 3:
+                    imgDealer3.Source = new BitmapImage(new Uri(@myGame.Dealer._myHand[2].Asset));
+                    break;
+
+                case 4:
+                    imgDealer4.Source = new BitmapImage(new Uri(@myGame.Dealer._myHand[3].Asset));
+                    break;
+
+                case 5:
+                    imgDealer5.Source = new BitmapImage(new Uri(@myGame.Dealer._myHand[4].Asset));
+                    myGame.EndGame();
+                    Stage = "End";
+                    break;
+            }
+        }
+
+        #endregion
 
 #region Menu Methods
 
@@ -199,14 +228,15 @@ namespace TexasHoldEm
 
         }
 
-#endregion
-
-
-//Interrupts
-private void myRaise_TextChanged(object sender, System.Windows.Controls.TextChangedEventArgs e)
+        private void MyRaise_TextChanged(object sender, System.Windows.Controls.TextChangedEventArgs e)
         {
             Int32.TryParse(myRaise.Text, out raiseAmount);
+
         } //Raise Textbox Ultrafast Input Updater
+
+        #endregion
+
+
     }
 }
 
