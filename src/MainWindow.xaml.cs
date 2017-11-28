@@ -16,6 +16,7 @@ using System.Windows.Controls;
 // App desktop icon credit -> Icon made by freepik from www.flaticon.com
 #endregion
 
+//TODO: finish UI structuring
 
 namespace TexasHoldEm
 {
@@ -23,11 +24,6 @@ namespace TexasHoldEm
     {
         Game myGame;
         TexasAI myAI;
-
-        private string _stage = null;
-        public string Stage { get { return _stage; } set { _stage = value; Console.WriteLine("Stage now set to: " + _stage); } }
-
-        int raiseAmount = 0;
 
         public MainWindow()
         {
@@ -51,14 +47,11 @@ namespace TexasHoldEm
 
         }
 
-
-
-
 #region state machine
 
         private void Button_Click_Fold(object sender, RoutedEventArgs e)
         {
-            if ((Stage == "Match or Fold") || (Stage == "Raise or Hold or Fold"))
+            if ((myGame.Stage == "Match or Fold") || (myGame.Stage == "Raise or Hold or Fold"))
             {
                 int k = 0;
                 foreach (Player player in myGame.Players)
@@ -67,52 +60,58 @@ namespace TexasHoldEm
                 }
                 if (k == 2)
                 {
-                    Stage = null;
+                    myGame.Stage = "End";
+                    myGame.TakeTurn("Fold");
+                    UpdateLeftPanel();
+                    UpdateTopLeftPanel();
+                    UpdateRightPanelStats();
                 }
-
-                myGame.TakeTurn("Fold");
-                Stage = "Fold";
-                WaitForAI();
+                else
+                {
+                    myGame.TakeTurn("Fold");
+                    myGame.Stage = "Fold";
+                    UpdateTopLeftPanel();
+                    WaitForAI();
+                }
             }
         }
 
         private void Button_Click_Hold(object sender, RoutedEventArgs e)
         {
-            if (Stage == "Raise or Hold or Fold")
+            if (myGame.Stage == "Raise or Hold or Fold")
             {
                 myGame.TakeTurn();
-                Stage = "Hold";
+                myGame.Stage = "Hold";
                 WaitForAI();
             }
         }
 
+        //returns match if not the last to match or raiseorholdorfold if player is the last to match
         private void Button_Click_Match(object sender, RoutedEventArgs e)
         {
-            if (Stage == "Match or Fold")
+            if (myGame.Stage == "Match or Fold")
             {
-                Stage = "Match";
+                myGame.Stage = "Match";
                 //Triggers when all players have responded to a raise.
-                if (myGame.TakeTurn("Match"))
-                {
-                    Stage = "Raise or Hold or Fold";
-                    myAI.PlayerHasRaised = false;
-                }
+                if (myGame.TakeTurn("Match")) myGame.Stage = "Raise or Hold or Fold";
+                UpdateTopLeftPanel();
                 WaitForAI();
             }
         }
 
         private void Button_Click_Raise(object sender, RoutedEventArgs e)
         {
-            if (Stage == "Raise or Hold or Fold")
+            if (myGame.Stage == "Raise or Hold or Fold")
             {
                 //Checks if raise is appropriate.
-                if ((raiseAmount <= 0) || (raiseAmount > myGame.Players[0].Funds))
+                if ((myGame._betAmountPlayerBuffer <= 0) || (myGame._betAmountPlayerBuffer > myGame.Players[0].Funds))
                 {
-                    Console.WriteLine( "Dealer won't accept your bet!");
+                    TextBox_ScrollViewer_LeftSide.Text = "Dealer won't accept your bet!" + TextBox_ScrollViewer_LeftSide.Text;
                     return;
                 }
-                myGame.TakeTurn("Raise",0, raiseAmount);
-                Stage = "Raise";
+                myGame.TakeTurn("Raise",0, myGame._betAmountPlayerBuffer);
+                myGame.Stage = "Raise";
+                UpdateTopLeftPanel();
                 WaitForAI();
             }
         }
@@ -120,16 +119,16 @@ namespace TexasHoldEm
         private void Button_Click_NewHand(object sender, RoutedEventArgs e)
         {
             //generates a new hand and populates image frames.
-            if ((Stage == "End") || (Stage == null))
+            if ((myGame.Stage == "End") || (myGame.Stage == null))
             {
                 //TODO: needs restructuring as some methods need to occur at end of game and some at beginning.
                 myGame.TakeTurn("New Hand");
+                myGame.Stage = "Raise or Hold or Fold";
                 ResetMainPanel();
                 UpdateTopLeftPanel();
                 UpdateRightPanelImages();
 
                 //Start game
-                Stage = "Raise or Hold or Fold";
                 WaitForAI();
             }
 
@@ -138,9 +137,9 @@ namespace TexasHoldEm
 
         private void WaitForAI()
         {
-        Stage  = myAI.TexasStateMachineForAI(Stage, myGame);
-        if (Stage == null) { Stage = "Raise or Hold or Fold"; }
-        else if (Stage == "Raise or Hold or Fold") { DealerDrawNext();}
+        myGame.Stage  = myAI.TexasStateMachineForAI(myGame.Stage, myGame);
+        if (myGame.Stage == null) { myGame.Stage = "Raise or Hold or Fold"; }
+        else if (myGame.Stage == "Raise or Hold or Fold") { DealerDrawNext();}
 
         //AI must continue if player stops playing.
         if(!myGame.Players[0].Playing)
@@ -181,14 +180,14 @@ namespace TexasHoldEm
                     UpdateTopLeftPanel();
                     UpdateRightPanelStats();
 
-                    Stage = "End";
+                    myGame.Stage = "End";
                     break;
             }
         }
 
         #endregion
 
-        #region Menu Methods
+#region Menu Methods
 
         public void UpdateLeftPanel()
         {
@@ -198,8 +197,6 @@ namespace TexasHoldEm
             for (int i = 0; i < myGame.numPlayers ; i++)
             {
                 topBuffer += myGame.Players[i].Name.ToString() + "'s Score: " + myGame.Players[i].Score.ToString() + "\n";
-
-                Console.WriteLine("198:" + topBuffer);
             }
             topBuffer += "\n";
             topBuffer += bottomBuffer;
@@ -272,15 +269,15 @@ namespace TexasHoldEm
         {
             TextBlock_GameNumberCounter.Text = "Game " + myGame.gameNumber.ToString();
             TextBlock_CurrentPlayerName.Text =  myGame.Players[0].Name.ToString();
-            TextBlock_Game_Pool.Text = myGame._pool.ToString();
+            TextBlock_Game_Pool.Text = "Current Pool: " +  myGame._pool.ToString();
             TextBlock_Player1_CurrentBet.Text = "Current Bet: " + myGame.Players[0].Bet.ToString();
             TextBlock_Player1_Funds.Text = "Funds: " + myGame.Players[0].Funds.ToString();
-            TextBlock_Player1_NetProfit.Text = "Net: " + myGame.Players[0].Profit.ToString();
+            TextBlock_Player1_NetProfit.Text = "Net: " + (myGame.Players[0].Funds-myGame.Players[0].OriginalFunds).ToString();
         }
 
         private void MyRaise_TextChanged(object sender, System.Windows.Controls.TextChangedEventArgs e)
         {
-            Int32.TryParse(myRaise.Text, out raiseAmount);
+            if(myGame != null) Int32.TryParse(myRaise.Text, out myGame._betAmountPlayerBuffer);
 
         } //Raise Textbox Ultrafast Input Updater
 

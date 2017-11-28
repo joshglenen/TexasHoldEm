@@ -4,6 +4,8 @@ using System;
 
 namespace TexasHoldEm
 {
+    //TODO: find a way to solve a tie between winning players only
+
     class PokerHandValue
     {
         /// <summary>

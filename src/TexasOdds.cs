@@ -4,6 +4,8 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
+//TODO: fundamental calculation implementation
+
 namespace TexasHoldEm
 {
     /// <summary>

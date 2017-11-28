@@ -2,6 +2,8 @@
 using System.Collections.Generic;
 using System.Linq;
 
+//TODO: finish scoring system, add leaderboard
+
 namespace TexasHoldEm
 {
     class Player
@@ -11,7 +13,7 @@ namespace TexasHoldEm
         public static int NumCards = 0;
         public int Bet { get; private set; }
         public int Funds { get; private set; }
-        public int Profit { get; private set; }
+        public int OriginalFunds { get; private set; }
         public int Score;
 
         //internal variables
@@ -23,7 +25,7 @@ namespace TexasHoldEm
         public Player(string name, int numberOfCardsInHand = 2, int funds = 100)
         {
             Score = 0;
-            Profit = 0;
+            OriginalFunds = funds;
             Name = name;
             Funds = funds;
             NumCards = numberOfCardsInHand;
@@ -115,7 +117,7 @@ namespace TexasHoldEm
 
         public void SetFunds(int income)
         {
-            Profit += income - Bet;
+            OriginalFunds += income - Bet;
             Funds += income;
             Playing = false;
             AllIn = false;
@@ -135,9 +137,13 @@ namespace TexasHoldEm
 
 #region game vars
         public int _pool { get; private set; }
-        public int _lastBet { get; private set; }
+        public int _betAmount { get; private set; }
         public int _raisePlayerIndex;
-#endregion
+        public int _betAmountPlayerBuffer;
+        private string _stage;
+        public string Stage { get { return _stage; } set {_stage = value; Console.WriteLine("@Player@ Stage now set to: " + _stage); } }
+
+        #endregion
 
 #region Beginning of game
 
@@ -161,8 +167,10 @@ namespace TexasHoldEm
             gameNumber++;
             NewDeck();
             _pool = 0;
-            _lastBet = 0;
+            _betAmount = 0;
+            _betAmountPlayerBuffer = 0;
             _raisePlayerIndex = 0;
+            _stage = null;
 
             foreach (Player player in Players)
             {
@@ -262,12 +270,12 @@ namespace TexasHoldEm
         {
             Players[playerIndex].RaiseBet(amount);
             _pool += amount;
-            _lastBet = amount;
+            _betAmount = amount;
         }
         public void MatchBet(int playerIndex)
         {
-            Players[playerIndex].RaiseBet(_lastBet);
-            _pool += _lastBet;
+            Players[playerIndex].RaiseBet(_betAmount);
+            _pool += _betAmount;
         }
         public void Fold(int playerIndex)
         {
