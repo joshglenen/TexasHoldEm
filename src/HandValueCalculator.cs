@@ -6,7 +6,7 @@ namespace TexasHoldEm
 {
     //TODO: find a way to solve a tie between winning players only
 
-    class PokerHandValue
+    class HandValueCalculator
     {
         /// <summary>
         /// Calculates the value of a poker hand of five cards
@@ -27,6 +27,8 @@ namespace TexasHoldEm
         ///</vals>
         public static int Calculate(int[] values, string[] suits)
         {
+            if ((values.Length != 5)|| (suits.Length != 5)) throw new UnauthorizedAccessException("This method only deals with the best five cards");
+
             int handValue = 0;
             if (CheckForFlush(suits)) handValue += 7000000;
             if (CheckForStraight(values)) handValue += 6000000;
@@ -105,8 +107,15 @@ namespace TexasHoldEm
             return handValue;
         }
 
-        //temporary BRUTE FORCE check for max of all possible combinations of 3 of 5 dealer cards with the player's 2 cards
-        public static int TexasHoldemCalculate(int[] values, string[] suits)
+        /// <summary>
+        /// Calculates the value of a poker hand of five cards
+        /// Brute force check of best combination of 3 of 5 dealer cards. 
+        /// Caution: slow.
+        /// </summary>
+        /// <param name="values">the values of the dealers 5 cards followed by the players two cards in a 7 integer array</param>
+        /// <param name="suits">Suits corresponding to the values based on index</param>
+        /// <returns>A 6 integer zero indexed array of the best value followed by the values of that hand sorted in decending order</returns>
+        public static int BOF_Calculate(int[] values, string[] suits)
         {
             int[] CheckForMaxValue = new int[10];
             int[] bufferValues = new int[5];
@@ -200,7 +209,7 @@ namespace TexasHoldEm
         }
 
         //internal use for now
-        public static bool CheckForFlush(string[] args)
+        private static bool CheckForFlush(string[] args)
         {
             for (int i = 1; i < args.Length; i++)
             {
@@ -209,7 +218,7 @@ namespace TexasHoldEm
             return true;
 
         } //determines if string array is filled with duplicate strings
-        public static bool CheckForStraight(int[] args)
+        private static bool CheckForStraight(int[] args)
         {
             int[] sortedArgs = args.OrderBy(i => i).ToArray();
             int[] specialCase = { 1, 10, 11, 12, 13 };
@@ -221,7 +230,7 @@ namespace TexasHoldEm
             return true;
 
         } //determines if a series of ints are serialized when sorted
-        public static int[] CheckForPairs(int[] args)
+        private static int[] CheckForPairs(int[] args)
         {
             int[] sortedArgs =  args.OrderBy(i => i).ToArray();
             int[] k = new int[sortedArgs.Length];
@@ -255,17 +264,17 @@ namespace TexasHoldEm
             return Buffer;
 
         }  //input card values, outputs number of duplicates followed by card value for each unique card value in input
-        public static bool CheckFullHouse(int[] args)
+        private static bool CheckFullHouse(int[] args)
         {
             int[] check = CheckForPairs(args);
             if (check[0] + check[2] == 5) return true;
             return false;
-        } 
-        public static int CheckHighCard(int[] args)
+        }
+        private static int CheckHighCard(int[] args)
         {
             return args.Max();
         }
-        public static bool CheckRoyalFlush(int[] val, string[] suit)
+        private static bool CheckRoyalFlush(int[] val, string[] suit)
         {
             if (!CheckForFlush(suit)) return false;
             int[] sortedArgs = val.OrderBy(i => i).ToArray();

@@ -37,7 +37,7 @@ namespace TexasHoldEm
         /// </summary>
         /// <param name="state">"Fold","Hold","Match","Raise"</param>
         /// <returns>"Raise or Hold or Fold","Match or Fold"</returns>
-        public string TexasStateMachineForAI(string state, Game myGame)
+        public string TexasStateMachineForAI(string state, PokerGame myGame)
         {
             AI_Stage = "Raise or Hold or Fold";
 
@@ -82,7 +82,7 @@ namespace TexasHoldEm
 
         }
 
-        private void RaiseOrHoldOrFold(Game myGame)
+        private void RaiseOrHoldOrFold(PokerGame myGame)
         {
             if(PlayersTurn != myGame.numPlayers)
             {
@@ -95,24 +95,24 @@ namespace TexasHoldEm
             PlayersTurn = 1;
         }
 
-        private void AI_Fold(Game myGame, int playerIndex)
+        private void AI_Fold(PokerGame myGame, int playerIndex)
         {
             myGame.TakeTurn("Fold", playerIndex);
         }
-        private void AI_Hold(Game myGame, int playerIndex)
+        private void AI_Hold(PokerGame myGame, int playerIndex)
         {
             myGame.TakeTurn("Hold", playerIndex);
         }
-        private bool AI_Match(Game myGame, int playerIndex)
+        private bool AI_Match(PokerGame myGame, int playerIndex)
         {
             return myGame.TakeTurn("Match", playerIndex);
         }
-        private void AI_Raise(Game myGame, int playerIndex, int amount)
+        private void AI_Raise(PokerGame myGame, int playerIndex, int amount)
         {
             myGame.TakeTurn("Raise", playerIndex, amount);
         }
 
-        private void ContinueMatchCheck(Game myGame)
+        private void ContinueMatchCheck(PokerGame myGame)
         {
                 bool buffer = true;
                 while (buffer)

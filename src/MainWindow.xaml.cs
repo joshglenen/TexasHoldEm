@@ -22,7 +22,7 @@ namespace TexasHoldEm
 {
     public partial class MainWindow : Window
     {
-        Game myGame;
+        PokerGame myGame;
         TexasAI myAI;
 
         public MainWindow()
@@ -40,11 +40,7 @@ namespace TexasHoldEm
             int funds = 100;
 
             myAI = new TexasAI();
-
-            myGame = new Game(args, 5, numPlayers, funds);
-            
-
-
+            myGame = new PokerGame(args, 5, numPlayers, funds);
         }
 
 #region state machine
@@ -269,7 +265,7 @@ namespace TexasHoldEm
         {
             TextBlock_GameNumberCounter.Text = "Game " + myGame.gameNumber.ToString();
             TextBlock_CurrentPlayerName.Text =  myGame.Players[0].Name.ToString();
-            TextBlock_Game_Pool.Text = "Current Pool: " +  myGame._pool.ToString();
+            TextBlock_Game_Pot.Text = "Current Pot: " +  myGame._pot.ToString();
             TextBlock_Player1_CurrentBet.Text = "Current Bet: " + myGame.Players[0].Bet.ToString();
             TextBlock_Player1_Funds.Text = "Funds: " + myGame.Players[0].Funds.ToString();
             TextBlock_Player1_NetProfit.Text = "Net: " + (myGame.Players[0].Funds-myGame.Players[0].OriginalFunds).ToString();
