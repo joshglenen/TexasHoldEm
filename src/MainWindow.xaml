@@ -92,6 +92,7 @@
         <TextBlock HorizontalAlignment="Left" FontSize="16" TextElement.Foreground="YellowGreen"  Margin="10,89,0,0" TextWrapping="Wrap" x:Name="TextBlock_Player1_NetProfit" Text="Net: 0" VerticalAlignment="Top" Width="173"/>
         <TextBlock HorizontalAlignment="Left" FontSize="16" TextElement.Foreground="YellowGreen"  Margin="10,110,0,0" TextWrapping="Wrap" x:Name="TextBlock_Player1_CurrentBet" Text="Bet: 0" VerticalAlignment="Top" Width="173"/>
         <TextBlock HorizontalAlignment="Left" FontSize="16" TextElement.Foreground="YellowGreen"  Margin="10,131,0,0" TextWrapping="Wrap" x:Name="TextBlock_Game_Pot" Text="Pot: 0" VerticalAlignment="Top" Width="173"/>
+        <TextBlock HorizontalAlignment="Left" TextElement.FontSize="22" Name="TextBlock_GameWinner" TextAlignment="Center" TextElement.FontStyle ="Italic"  TextElement.Foreground="Black" Margin="516,408,0,0" TextWrapping="Wrap" Text="Texas Hold'em" VerticalAlignment="Top" Width="246" Height="50"/>
 
     </Grid>
 </Window>

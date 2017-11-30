@@ -37,13 +37,13 @@ namespace TexasHoldEm
             //TODO: collect data from xml instead
             string[] args = { "Jason", "Annie","Oswald" , "Cooper"};
             int numPlayers = 4;
-            int funds = 100;
+            int funds = 1000;
 
             myAI = new TexasAI();
             myGame = new PokerGame(args, 5, numPlayers, funds);
         }
 
-#region state machine
+        #region state machine (changes _stage property of Game class)
 
         private void Button_Click_Fold(object sender, RoutedEventArgs e)
         {
@@ -56,11 +56,9 @@ namespace TexasHoldEm
                 }
                 if (k == 2)
                 {
-                    myGame.Stage = "End";
                     myGame.TakeTurn("Fold");
-                    UpdateLeftPanel();
-                    UpdateTopLeftPanel();
-                    UpdateRightPanelStats();
+                    UpdateEndGameUI();
+
                 }
                 else
                 {
@@ -170,20 +168,26 @@ namespace TexasHoldEm
                 case 5:
                     imgDealer5.Source = new BitmapImage(new Uri(@myGame.Dealer._myHand[4].Asset));
                     myGame.EndGame();
-
-                    //TODO: check method order either start of game or end of game
-                    UpdateLeftPanel();
-                    UpdateTopLeftPanel();
-                    UpdateRightPanelStats();
-
-                    myGame.Stage = "End";
+                    UpdateEndGameUI();
                     break;
             }
         }
 
+        private void UpdateEndGameUI()
+        {
+            myGame.Stage = "End";
+
+            //TODO: check method order either start of game or end of game
+            UpdateLeftPanel();
+            UpdateTopLeftPanel();
+            UpdateRightPanelStats();
+            TextBlock_GameWinner.Text = myGame._winner;
+        }
+
+
         #endregion
 
-#region Menu Methods
+        #region Menu Methods (changes XAML GUI or reads from it)
 
         public void UpdateLeftPanel()
         {
@@ -255,6 +259,7 @@ namespace TexasHoldEm
                 imgDealer3.Source = new BitmapImage();
             }
 
+            TextBlock_GameWinner.Text = null;
             imgDealer1.Source = new BitmapImage(new Uri(@myGame.Dealer._myHand[0].Asset));
             imgDealer2.Source = new BitmapImage(new Uri(@myGame.Dealer._myHand[1].Asset));
             imgMain1.Source = new BitmapImage(new Uri(@myGame.Players[0]._myHand[0].Asset));

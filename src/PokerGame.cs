@@ -22,6 +22,7 @@ namespace TexasHoldEm
         public int _raisePlayerIndex;
         public int _betAmountPlayerBuffer;
         private string _stage;
+        public string _winner { get; private set; }
         public string Stage { get { return _stage; } set {_stage = value; Console.WriteLine("@Player@ Stage now set to: " + _stage); } }
 
         #endregion
@@ -45,6 +46,7 @@ namespace TexasHoldEm
         /// </summary>
         public void NewGame()
         {
+            _winner = "No Winner";
             gameNumber++;
             NewDeck();
             _pot = 0;
@@ -200,29 +202,28 @@ namespace TexasHoldEm
             }
             if(numberOfWinners>1)
             {
-                Console.Write("PokerGame -> Tie Found as:");
                 
                 scores[0] = DetermineWinnerOfTie(winningPlayers)[0];
                 if(scores[1]!=0)
                 {
                     //case for a true tie: split the pot
-
+                    //TODO: perform proper split based on number of tied players
                     int splitPot = _pot/numPlayers;
                     foreach(Player player in Players)
                     {
                         player.SetFunds(splitPot);
                     }
 
-                    Console.WriteLine("true");
+                    _winner = "Tie";
+                    
                     foreach (Player player in Players)
                     {
                         player.Playing = false;
                     }
                     return;
                 }
-                Console.WriteLine("false");
             }
-
+            _winner = Players[scores[0]].Name + " is the winner!";
             //Give money to winner
             Players[scores[0]].SetFunds(_pot);
 
@@ -288,8 +289,8 @@ namespace TexasHoldEm
 
             //TODO: when only a subset of players with the same score have the same max value, need to get thier id's and overwrite tieList IMPORTANT
             int[] PlayerHand = new int[2];
-            int[] maxValues0 = new int[tieList.Length];
-            int[] maxValues1 = new int[tieList.Length];
+            int[] maxValues = new int[tieList.Length];
+            List<int> newTieList = new List<int>();
             int maxValue = 0;
             int maxCounter = 0;
             int winner = -1;
@@ -298,52 +299,75 @@ namespace TexasHoldEm
             for (int i = 0; i < tieList.Length; i++)
             {
                 PlayerHand = Players[tieList[i]].GetValues();
+                for (int u = 0; u < 2; u++)
+                {
+                    if (PlayerHand[u] == 1) PlayerHand[u] = 14;
+                }
                 PlayerHand = PlayerHand.OrderByDescending(c => c).ToArray();
-                maxValues0[i] = PlayerHand[0];
-                maxValues1[i] = PlayerHand[1];
+                maxValues[i] = PlayerHand[0];
             }
 
             //determine if only one maximum
-            maxValue = maxValues0.Max();
+            maxValue = maxValues.Max();
+            Console.WriteLine("PokerGame -> 312 -> max value: " + maxValue.ToString());
             for (int i = 0; i < tieList.Length; i++)
             {
-                if (maxValues0[i] == maxValue)
+                if (maxValues[i] == maxValue)
                 {
+                    Console.WriteLine("PokerGame -> 317 -> determine max loop: " + maxValues[i].ToString());
                     winner = tieList[i];
+                    newTieList.Add(tieList[i]);
                     maxCounter++;
                 }
             }
             
             //not a true tie
-            if(maxCounter<1)
+            if(maxCounter==1)
             {
+                tieList = new int[2];
                 tieList[0] = winner;
                 tieList[1] = 0;
                 return tieList;
             }
 
-            //keep checking
+            //TODO: getting bad value for console writeline at 349
+            //now check each second highest (of two) player card
+            for (int i = 0; i < newTieList.Count; i++)
+            {
+                PlayerHand = Players[newTieList[i]].GetValues();
+                for (int u = 0; u < 2; u++)
+                {
+                    if (PlayerHand[u] == 1) PlayerHand[u] = 14;
+                }
+                PlayerHand = PlayerHand.OrderByDescending(c => c).ToArray();
+                maxValues[i] = PlayerHand[1];
+            }
+
             maxCounter = 0;
             winner = -1;
-            maxValue = maxValues1.Max();
-            for (int i = 0; i < tieList.Length; i++)
+            maxValue = maxValues.Max();
+            Console.WriteLine("PokerGame -> 347 -> max value: " + maxValue.ToString());
+            for (int i = 0; i < newTieList.Count; i++)
             {
-                if (maxValues1[i] == maxValue)
+                if (maxValues[i] == maxValue)
                 {
-                    winner = tieList[i];
+                    Console.WriteLine("PokerGame -> 353 -> determine max loop: " + maxValues[i].ToString());
+                    winner = newTieList[i];
                     maxCounter++;
                 }
             }
 
             //not a true tie
-            if (maxCounter < 1)
+            if (maxCounter == 1)
             {
+                tieList = new int[2];
                 tieList[0] = winner;
                 tieList[1] = 0;
                 return tieList;
             }
 
             //a true tie
+            tieList = new int[2];
             tieList[0] = winner;
             tieList[1] = 1;
             return tieList;

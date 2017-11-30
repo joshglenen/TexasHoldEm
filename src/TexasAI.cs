@@ -8,6 +8,20 @@ namespace TexasHoldEm
 
     //TODO: fix raise system, start choice backend, add manditory small bet system
 {
+    class Personality
+    {
+        private bool _always_matches;
+        private bool _high_roller;
+        private bool _cautious_better;
+        private bool _passive_player;
+        private bool _random_decisions;
+
+        public Personality(int difficulty, bool randomPersonality, int startingFunds, int minimumBet, int maxBet)
+        {
+        }
+    }
+
+
     class TexasAI
     {
         public int PlayerGoesFirst { get; private set; }
