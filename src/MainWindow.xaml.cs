@@ -32,6 +32,7 @@ namespace TexasHoldEm
             UpdateTopLeftPanel();
             UpdateRightPanelStats();
         }
+
         private void InitializePlayers()
         {
             //TODO: collect data from xml instead
@@ -45,6 +46,11 @@ namespace TexasHoldEm
 
         #region state machine (changes _stage property of Game class)
 
+        /// <summary>
+        /// sets stage to hold, updates myGame
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         private void Button_Click_Fold(object sender, RoutedEventArgs e)
         {
             if ((myGame.Stage == "Match or Fold") || (myGame.Stage == "Raise or Hold or Fold"))
@@ -70,6 +76,11 @@ namespace TexasHoldEm
             }
         }
 
+        /// <summary>
+        /// sets stage to hold, updates myGame
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         private void Button_Click_Hold(object sender, RoutedEventArgs e)
         {
             if (myGame.Stage == "Raise or Hold or Fold")
@@ -80,7 +91,11 @@ namespace TexasHoldEm
             }
         }
 
-        //returns match if not the last to match or raiseorholdorfold if player is the last to match
+        /// <summary>
+        /// sets stage to match or raiseorholdorfold if player is the last to match, updates myGame
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         private void Button_Click_Match(object sender, RoutedEventArgs e)
         {
             if (myGame.Stage == "Match or Fold")
@@ -93,6 +108,11 @@ namespace TexasHoldEm
             }
         }
 
+        /// <summary>
+        /// Sets stage to raise, updates myGame
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         private void Button_Click_Raise(object sender, RoutedEventArgs e)
         {
             if (myGame.Stage == "Raise or Hold or Fold")
@@ -100,7 +120,7 @@ namespace TexasHoldEm
                 //Checks if raise is appropriate.
                 if ((myGame._betAmountPlayerBuffer <= 0) || (myGame._betAmountPlayerBuffer > myGame.Players[0].Funds))
                 {
-                    TextBox_ScrollViewer_LeftSide.Text = "Dealer won't accept your bet!" + TextBox_ScrollViewer_LeftSide.Text;
+                    UpdateLeftPanel("Dealer won't accept your bet!");
                     return;
                 }
                 myGame.TakeTurn("Raise",0, myGame._betAmountPlayerBuffer);
@@ -110,6 +130,11 @@ namespace TexasHoldEm
             }
         }
 
+        /// <summary>
+        /// Reset's the game UI and sets the stage to its default.
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         private void Button_Click_NewHand(object sender, RoutedEventArgs e)
         {
             //generates a new hand and populates image frames.
@@ -125,10 +150,11 @@ namespace TexasHoldEm
                 //Start game
                 WaitForAI();
             }
-
-
         }
 
+        /// <summary>
+        /// Allows AI to take it's turn and determine's the next state for the player
+        /// </summary>
         private void WaitForAI()
         {
         myGame.Stage  = myAI.TexasStateMachineForAI(myGame.Stage, myGame);
@@ -151,6 +177,9 @@ namespace TexasHoldEm
         }
         }
 
+        /// <summary>
+        /// Add's a card to the dealer's hand and updates the images. One of two ways to end the game.
+        /// </summary>
         private void DealerDrawNext()
         {
             myGame.DrawCard(-1);
@@ -173,39 +202,54 @@ namespace TexasHoldEm
             }
         }
 
+        /// <summary>
+        /// Sets stage to end, updates the UI when the game ends
+        /// </summary>
         private void UpdateEndGameUI()
         {
             myGame.Stage = "End";
-
-            //TODO: check method order either start of game or end of game
-            UpdateLeftPanel();
+            PrintScores();
             UpdateTopLeftPanel();
             UpdateRightPanelStats();
+
+            //unique endgame updates
             TextBlock_GameWinner.Text = myGame._winner;
         }
-
 
         #endregion
 
         #region Menu Methods (changes XAML GUI or reads from it)
 
-        public void UpdateLeftPanel()
+        /// <summary>
+        /// Output's each players scores along with the game number at end of game
+        /// </summary>
+        private void PrintScores()
         {
-            string topBuffer = "";
-            string bottomBuffer = TextBox_ScrollViewer_LeftSide.Text;
-            topBuffer += "Game: " + myGame.gameNumber.ToString() + "\n";
+            string buffer = "Game: " + myGame.gameNumber.ToString() + "\n";
             for (int i = 0; i < myGame.numPlayers ; i++)
             {
-                topBuffer += myGame.Players[i].Name.ToString() + "'s Score: " + myGame.Players[i].Score.ToString() + "\n";
+                buffer += myGame.Players[i].Name.ToString() + "'s Score: " + myGame.Players[i].Score.ToString() + "\n";
             }
+            UpdateLeftPanel(buffer);
+        }
+
+        /// <summary>
+        /// Updates left panel text output
+        /// </summary>
+        /// <param name="args">Text for the user to see</param>
+        private void UpdateLeftPanel(string args)
+        {
+            string topBuffer = "\n" + args;
+            string bottomBuffer = TextBox_ScrollViewer_LeftSide.Text;
             topBuffer += "\n";
             topBuffer += bottomBuffer;
             TextBox_ScrollViewer_LeftSide.Text = topBuffer;
-            topBuffer = null;
-            bottomBuffer = null;
         }
 
-        public void UpdateRightPanelStats()
+        /// <summary>
+        /// updates right panel textblocks
+        /// </summary>
+        private void UpdateRightPanelStats()
         {
             TextBlock_Player2_Name.Text = myGame.Players[1].Name.ToString();
             TextBlock_Player2_Funds.Text = "Funds: " + myGame.Players[1].Funds.ToString();
@@ -229,7 +273,10 @@ namespace TexasHoldEm
             }
         }
 
-        public void UpdateRightPanelImages()
+        /// <summary>
+        /// updates right panel images
+        /// </summary>
+        private void UpdateRightPanelImages()
         {
             imgONE1.Source = new BitmapImage(new Uri(@myGame.Players[1]._myHand[0].Asset));
             imgONE2.Source = new BitmapImage(new Uri(@myGame.Players[1]._myHand[1].Asset));
@@ -249,7 +296,10 @@ namespace TexasHoldEm
             }
         }
 
-        public void ResetMainPanel()
+        /// <summary>
+        /// updates main panel textblocks and images
+        /// </summary>
+        private void ResetMainPanel()
         {
             //clears extra image frames when starting a new game if a game had previously been played in a session.
             if (imgDealer5.Source != null)
@@ -266,7 +316,10 @@ namespace TexasHoldEm
             imgMain2.Source = new BitmapImage(new Uri(@myGame.Players[0]._myHand[1].Asset));
         }
 
-        public void UpdateTopLeftPanel()
+        /// <summary>
+        /// updates top left panel textblocks
+        /// </summary>
+        private void UpdateTopLeftPanel()
         {
             TextBlock_GameNumberCounter.Text = "Game " + myGame.gameNumber.ToString();
             TextBlock_CurrentPlayerName.Text =  myGame.Players[0].Name.ToString();
@@ -276,11 +329,16 @@ namespace TexasHoldEm
             TextBlock_Player1_NetProfit.Text = "Net: " + (myGame.Players[0].Funds-myGame.Players[0].OriginalFunds).ToString();
         }
 
+        /// <summary>
+        /// Raise Textbox Input Updater
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         private void MyRaise_TextChanged(object sender, System.Windows.Controls.TextChangedEventArgs e)
         {
             if(myGame != null) Int32.TryParse(myRaise.Text, out myGame._betAmountPlayerBuffer);
 
-        } //Raise Textbox Ultrafast Input Updater
+        } 
 
         #endregion
 

@@ -30,12 +30,18 @@ namespace TexasHoldEm
 
         public int[] GetValues()
         {
-            int[] buffer = new int[5];
-            for (int i = 0; i < _myHand.Length; i++)
-            {
-                buffer[i] = _myHand[i].Value;
+            try{
+                int[] buffer = new int[5];
+                for (int i = 0; i < _myHand.Length; i++)
+                {
+                    buffer[i] = _myHand[i].Value;
+                }
+                return buffer;
             }
-            return buffer;
+            catch
+            {
+                throw new System.Exception("Player's hand does not currently exist for " + Name);
+            }
         }
 
         public string[] GetSuits()
@@ -84,6 +90,7 @@ namespace TexasHoldEm
 
         } //replaces a bet or creates one
 
+        //TODO: fix raise, it will crash when it should not!
         public bool RaiseBet(int bet)
         {
             if (AllIn) return false;

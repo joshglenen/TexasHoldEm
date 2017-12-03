@@ -375,7 +375,7 @@ namespace TexasHoldEm
 
         #endregion
 
-        #region debug
+#region debug
         public override string ToString()
         {
             string temp = "";

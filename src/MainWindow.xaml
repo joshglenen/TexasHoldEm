@@ -78,7 +78,7 @@
             </Border>
         </Grid>
         <ScrollViewer  Name="ScrollViewer_LeftSide" Background="{StaticResource Gray}" HorizontalAlignment="Left" Grid.Column="1" VerticalScrollBarVisibility="Auto" Margin="10,394,0,10" Width="173">
-            <TextBlock HorizontalAlignment="Left" Text="" Padding="5,5,5,5" Name="TextBox_ScrollViewer_LeftSide" TextElement.Foreground="WhiteSmoke" TextWrapping="Wrap" FontSize="10" Width="153" Height="276"/>
+            <TextBlock HorizontalAlignment="Left" Padding="5,0,0,0" Text="" Name="TextBox_ScrollViewer_LeftSide" TextElement.Foreground="WhiteSmoke" TextWrapping="Wrap" FontSize="10" Width="163" />
         </ScrollViewer>
         <TextBlock HorizontalAlignment="Left"  Name ="TextBlock_GameNumberCounter" FontSize="16" TextAlignment="Center" Background="{StaticResource Red}" Margin="10,10,0,0" TextWrapping="Wrap" TextElement.Foreground="WhiteSmoke" Text="Texas Hold'em" VerticalAlignment="Top" Width="173" Height="24"/>
         <TextBlock HorizontalAlignment="Left"  x:Name ="TextBlock_CurrentPlayerName" FontSize="16" TextAlignment="Center" Background="{StaticResource Gray}" Margin="10,39,0,0" TextWrapping="Wrap" TextElement.Foreground="WhiteSmoke" Text="Player 1" VerticalAlignment="Top" Width="173" Height="24"/>
