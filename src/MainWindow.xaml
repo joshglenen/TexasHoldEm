@@ -7,9 +7,9 @@
         mc:Ignorable="d"
         Background="{StaticResource Green}"
         
-        Top="0" Left="0"  ResizeMode="CanMinimize"
+        Top="0" Left="0"  ResizeMode="CanResize" 
         
-        Title="Texas Hold'Em" Height="720" Width="1280">
+        Title="Texas Hold'Em" Height="720" Width="1280" MinHeight="720" MinWidth="1280" MaxHeight="2560" MaxWidth="1440">
 
 
     <Grid Margin="0,1,0,0">
@@ -45,35 +45,35 @@
         </Border>
         <Button Content="Hold" Click="Button_Click_Hold" HorizontalAlignment="Left" Margin="10,225,0,0" Background="{StaticResource Blue}" VerticalAlignment="Top" Width="173" FontSize="16" Height="40"/>
         <Button Content="Match" Click="Button_Click_Match" HorizontalAlignment="Left" Margin="10,270,0,0" Background="{StaticResource Blue}" VerticalAlignment="Top" Width="173" FontSize="16" Height="40"/>
-        <Button Content="Raise" Click="Button_Click_Raise" HorizontalAlignment="Left" Margin="10,315,0,0" Background="{StaticResource Blue}" VerticalAlignment="Top" Width="60" FontSize="16" Height="29"/>
+        <Button Content="Raise:" Click="Button_Click_Raise" HorizontalAlignment="Left" Margin="10,315,0,0" Background="{StaticResource Blue}" VerticalAlignment="Top" Width="60" FontSize="16" Height="29"/>
         <Button Content="New Hand" TextElement.Foreground="WhiteSmoke" Click="Button_Click_NewHand" HorizontalAlignment="Left" Margin="10,180,0,0" Background="{StaticResource Red}" VerticalAlignment="Top" Width="173" FontSize="16" Height="40" RenderTransformOrigin="0.645,3.367"/>
-        <TextBox HorizontalAlignment="Left" Name="myRaise" Height="29" Margin="75,315,0,0" TextWrapping="Wrap"  Text="100" Background="{StaticResource Teal}" VerticalAlignment="Top" FontSize="16" Width="108" TextChanged="MyRaise_TextChanged" RenderTransformOrigin="0.925,-0.95"/>
+        <TextBox HorizontalAlignment="Left" Padding="2,2,2,2"  Name="myRaise" Height="29" Margin="75,315,0,0" TextWrapping="Wrap"  Text="0" Background="{StaticResource Teal}" VerticalAlignment="Top" FontSize="16" Width="108" TextChanged="MyRaise_TextChanged" RenderTransformOrigin="0.925,-0.95"/>
         <Button Content="Fold" Click="Button_Click_Fold" HorizontalAlignment="Left" Margin="10,349,0,0" Background="{StaticResource Blue}" VerticalAlignment="Top" Width="173" Height="35" FontSize="16"/>
-        <TextBlock Background="{StaticResource  Gray}" TextElement.Foreground="WhiteSmoke" HorizontalAlignment="Left" Margin="188,624,0,0" TextWrapping="Wrap" Text="My Hand" VerticalAlignment="Top" TextAlignment="Center" FontSize="16" Height="38" Width="898"/>
-        <TextBlock Background="{StaticResource Gray}" TextElement.Foreground="WhiteSmoke" HorizontalAlignment="Left" Margin="188,190,0,0" TextWrapping="Wrap" Text="Dealer" VerticalAlignment="Top" TextAlignment="Center" FontSize="16" Height="34" Width="898"/>
-        <Grid Background="{StaticResource Gray}"  HorizontalAlignment="Left" Margin="1100,180,0,10" Width="150"/>
+        <TextBlock Background="{StaticResource  Gray}" TextElement.Foreground="WhiteSmoke" Margin="188,624,0,0" TextWrapping="Wrap" Text="My Hand" VerticalAlignment="Top" TextAlignment="Center" FontSize="16" Height="38" HorizontalAlignment="Left" Width="898"/>
+        <TextBlock Background="{StaticResource Gray}" TextElement.Foreground="WhiteSmoke" Margin="188,190,0,0" TextWrapping="Wrap" Text="Dealer" VerticalAlignment="Top" TextAlignment="Center" FontSize="16" Height="34" HorizontalAlignment="Left" Width="898"/>
+        <Grid Background="{StaticResource Gray}" Margin="1100,180,0,10" MaxWidth="150" HorizontalAlignment="Left" Width="150"/>
         <Grid>
-            <Border BorderBrush="Black" Background="WhiteSmoke" BorderThickness="2" HorizontalAlignment="Left" Height="70" Margin="1110,200,0,0" VerticalAlignment="Top" Width="45">
+            <Border BorderBrush="Black" Background="WhiteSmoke" BorderThickness="2" HorizontalAlignment="Left" Height="90" Margin="1110,200,0,0" VerticalAlignment="Top" Width="60">
                 <Image Name="imgONE1"/>
             </Border>
-            <Border BorderBrush="Black" Background="WhiteSmoke" BorderThickness="2" HorizontalAlignment="Left" Height="70" Margin="1160,200,0,0" VerticalAlignment="Top" Width="45">
+            <Border BorderBrush="Black" Background="WhiteSmoke" BorderThickness="2" HorizontalAlignment="Left" Height="90" Margin="1180,200,0,0" VerticalAlignment="Top" Width="60">
                 <Image Name="imgONE2"/>
             </Border>
         </Grid>
         <Grid>
-            <Border BorderBrush="Black" Background="WhiteSmoke" BorderThickness="2" HorizontalAlignment="Left" Height="70" Margin="1110,300,0,0" VerticalAlignment="Top" Width="45">
+            <Border BorderBrush="Black" Background="WhiteSmoke" BorderThickness="2" HorizontalAlignment="Left" Height="90" Margin="1110,320,0,0" VerticalAlignment="Top" Width="60">
                 <Image Name="imgTWO1"/>
             </Border>
-            <Border BorderBrush="Black" Background="WhiteSmoke" BorderThickness="2" HorizontalAlignment="Left" Height="70" Margin="1160,300,0,0" VerticalAlignment="Top" Width="45">
+            <Border BorderBrush="Black" Background="WhiteSmoke" BorderThickness="2" HorizontalAlignment="Left" Height="90" Margin="1180,320,0,0" VerticalAlignment="Top" Width="60">
                 <Image Name="imgTWO2"/>
             </Border>
         </Grid>
 
         <Grid>
-            <Border BorderBrush="Black" Background="WhiteSmoke" BorderThickness="2" HorizontalAlignment="Left" Height="70" Margin="1110,400,0,0" VerticalAlignment="Top" Width="45">
+            <Border BorderBrush="Black" Background="WhiteSmoke" BorderThickness="2" HorizontalAlignment="Left" Height="90" Margin="1110,440,0,0" VerticalAlignment="Top" Width="60">
                 <Image Name="imgTHREE1"/>
             </Border>
-            <Border BorderBrush="Black" Background="WhiteSmoke" BorderThickness="2" HorizontalAlignment="Left" Height="70" Margin="1160,400,0,0" VerticalAlignment="Top" Width="45">
+            <Border BorderBrush="Black" Background="WhiteSmoke" BorderThickness="2" HorizontalAlignment="Left" Height="90" Margin="1180,440,0,0" VerticalAlignment="Top" Width="60">
                 <Image Name="imgTHREE2"/>
             </Border>
         </Grid>
@@ -84,15 +84,21 @@
         <TextBlock HorizontalAlignment="Left"  x:Name ="TextBlock_CurrentPlayerName" FontSize="16" TextAlignment="Center" Background="{StaticResource Gray}" Margin="10,39,0,0" TextWrapping="Wrap" TextElement.Foreground="WhiteSmoke" Text="Player 1" VerticalAlignment="Top" Width="173" Height="24"/>
         <TextBlock HorizontalAlignment="Left" TextElement.Foreground="WhiteSmoke"  Margin="1113,180,0,0" TextWrapping="Wrap" Name="TextBlock_Player2_Name" Text="Player 2" VerticalAlignment="Top" Width="50"/>
         <TextBlock HorizontalAlignment="Left" TextElement.Foreground="YellowGreen"  Margin="1168,180,0,0" TextWrapping="Wrap" Name="TextBlock_Player2_Funds" Text="Funds: 100" VerticalAlignment="Top" Width="82"/>
-        <TextBlock HorizontalAlignment="Left" TextElement.Foreground="WhiteSmoke"  Margin="1113,284,0,0" TextWrapping="Wrap" Name="TextBlock_Player3_Name" Text="Player 3" VerticalAlignment="Top" Width="50"/>
-        <TextBlock HorizontalAlignment="Left" TextElement.Foreground="YellowGreen"  Margin="1168,284,0,0" TextWrapping="Wrap" Name="TextBlock_Player3_Funds" Text="Funds: 100" VerticalAlignment="Top" Width="82"/>
-        <TextBlock HorizontalAlignment="Left" TextElement.Foreground="WhiteSmoke"  Margin="1113,381,0,0" TextWrapping="Wrap" Name="TextBlock_Player4_Name" Text="Player 4" VerticalAlignment="Top" Width="50"/>
-        <TextBlock HorizontalAlignment="Left" TextElement.Foreground="YellowGreen"  Margin="1168,381,0,0" TextWrapping="Wrap" Name="TextBlock_Player4_Funds" Text="Funds: 100" VerticalAlignment="Top" Width="82"/>
+        <TextBlock HorizontalAlignment="Left" TextElement.Foreground="WhiteSmoke"  Margin="1113,304,0,0" TextWrapping="Wrap" Name="TextBlock_Player3_Name" Text="Player 3" VerticalAlignment="Top" Width="50"/>
+        <TextBlock HorizontalAlignment="Left" TextElement.Foreground="YellowGreen"  Margin="1168,304,0,0" TextWrapping="Wrap" Name="TextBlock_Player3_Funds" Text="Funds: 100" VerticalAlignment="Top" Width="82"/>
+        <TextBlock HorizontalAlignment="Left" TextElement.Foreground="WhiteSmoke"  Margin="1113,421,0,0" TextWrapping="Wrap" Name="TextBlock_Player4_Name" Text="Player 4" VerticalAlignment="Top" Width="50"/>
+        <TextBlock HorizontalAlignment="Left" TextElement.Foreground="YellowGreen"  Margin="1168,421,0,0" TextWrapping="Wrap" Name="TextBlock_Player4_Funds" Text="Funds: 100" VerticalAlignment="Top" Width="82"/>
         <TextBlock HorizontalAlignment="Left" FontSize="16" TextElement.Foreground="YellowGreen"  Margin="10,68,0,0" TextWrapping="Wrap" x:Name="TextBlock_Player1_Funds" Text="Funds: 100" VerticalAlignment="Top" Width="173"/>
         <TextBlock HorizontalAlignment="Left" FontSize="16" TextElement.Foreground="YellowGreen"  Margin="10,89,0,0" TextWrapping="Wrap" x:Name="TextBlock_Player1_NetProfit" Text="Net: 0" VerticalAlignment="Top" Width="173"/>
         <TextBlock HorizontalAlignment="Left" FontSize="16" TextElement.Foreground="YellowGreen"  Margin="10,110,0,0" TextWrapping="Wrap" x:Name="TextBlock_Player1_CurrentBet" Text="Bet: 0" VerticalAlignment="Top" Width="173"/>
         <TextBlock HorizontalAlignment="Left" FontSize="16" TextElement.Foreground="YellowGreen"  Margin="10,131,0,0" TextWrapping="Wrap" x:Name="TextBlock_Game_Pot" Text="Pot: 0" VerticalAlignment="Top" Width="173"/>
         <TextBlock HorizontalAlignment="Left" TextElement.FontSize="22" Name="TextBlock_GameWinner" TextAlignment="Center" TextElement.FontStyle ="Italic"  TextElement.Foreground="Black" Margin="516,408,0,0" TextWrapping="Wrap" Text="Texas Hold'em" VerticalAlignment="Top" Width="246" Height="50"/>
+        <Button Content="Determine best move" HorizontalAlignment="Left" Margin="210,12,0,0" Background="SandyBrown" VerticalAlignment="Top" Width="174" FontSize="16" Height="40"/>
+        <Button Content="Calculate odds" HorizontalAlignment="Left" Margin="210,57,0,0" Background="SandyBrown" VerticalAlignment="Top" Width="174" FontSize="16" Height="40"/>
+        <Button Content="Open Stats Panel" HorizontalAlignment="Left" Margin="210,104,0,0" Background="SandyBrown" VerticalAlignment="Top" Width="174" FontSize="16" Height="40"/>
+        <Button Content="More Info" HorizontalAlignment="Left" Margin="389,12,0,0" Background="SandyBrown" VerticalAlignment="Top" Width="174" FontSize="16" Height="40"/>
+        <Button Content="Strategy Guide" HorizontalAlignment="Left" Margin="389,58,0,0" Background="SandyBrown" VerticalAlignment="Top" Width="174" FontSize="16" Height="40"/>
+        <Button Content="Math Guide" HorizontalAlignment="Left" Margin="389,103,0,0" Background="SandyBrown" VerticalAlignment="Top" Width="174" FontSize="16" Height="40"/>
 
     </Grid>
 </Window>

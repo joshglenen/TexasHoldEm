@@ -9,14 +9,19 @@ namespace TexasHoldEm
     class PokerGame : DeckOfCards
     {
 
-#region session vars
-        public Player[] Players;
-        public Player Dealer;
-        public int numPlayers;
-        public int gameNumber;
+        #region session vars (do not change in a session)
+        public Player[] _players;
+        public Player _dealer;
+        public int _numPlayers;
+        public int _gameNumber;
+        public int _minBet;
+        public int _maxBet;
+        public bool _noLimits;
+        public int _smallBlind;
+        public int _bigBlind;
         #endregion
 
-#region game vars
+        #region game vars (change every game in a session)
         public int _pot { get; private set; }
         public int _betAmount { get; private set; }
         public int _raisePlayerIndex;
@@ -27,17 +32,22 @@ namespace TexasHoldEm
 
         #endregion
 
-#region Beginning of game
+        #region Beginning of game
 
-        public PokerGame(string[] names = null, int numCards = 5, int NumPlayers = 2, int funds = 100)
+        public PokerGame(string[] names = null, int numCards = 5, int NumPlayers = 2, int funds = 100, bool noLimits = false, int smallBlind = 5, int bigBlind = 10, int minBet = 10, int maxBet = 100)
         {
-            gameNumber = -1;
-            Players = new Player[NumPlayers];
-            Dealer = new Player("Dealer", 5, 0);
-            numPlayers = NumPlayers;
+            _gameNumber = -1;
+            _minBet = minBet;
+            _maxBet = maxBet;
+            _smallBlind = smallBlind;
+            _bigBlind = bigBlind;
+            _noLimits = noLimits;
+            _players = new Player[NumPlayers];
+            _dealer = new Player("Dealer", 5, 0);
+            _numPlayers = NumPlayers;
             for (int i = 0; i < NumPlayers; i++)
             {
-                Players[i] = new Player(names[i], numCards, funds);
+                _players[i] = new Player(names[i], numCards, funds);
             }
             NewGame();
         }
@@ -47,7 +57,7 @@ namespace TexasHoldEm
         public void NewGame()
         {
             _winner = "No Winner";
-            gameNumber++;
+            _gameNumber++;
             NewDeck();
             _pot = 0;
             _betAmount = 0;
@@ -55,15 +65,15 @@ namespace TexasHoldEm
             _raisePlayerIndex = 0;
             _stage = null;
 
-            foreach (Player player in Players)
+            foreach (Player player in _players)
             {
                 player.ResetHand();
                 player.DrawCard(DrawTop());
                 player.DrawCard(DrawTop());
             }
-            Dealer.ResetHand();
-            Dealer.DrawCard(DrawTop());
-            Dealer.DrawCard(DrawTop());
+            _dealer.ResetHand();
+            _dealer.DrawCard(DrawTop());
+            _dealer.DrawCard(DrawTop());
 
         }
         private void NewDeck()
@@ -84,17 +94,17 @@ namespace TexasHoldEm
         {
             if (playerIndex == -1)
             {
-                Dealer.DrawCard(DrawTop());
+                _dealer.DrawCard(DrawTop());
             }
             else
             {
-                Players[playerIndex].DrawCard(DrawTop());
+                _players[playerIndex].DrawCard(DrawTop());
             }
         }
         public void DrawCard(string playerName)
         {
-            if (playerName == "Dealer") Dealer.DrawCard(DrawTop());
-            foreach (Player player in Players)
+            if (playerName == "Dealer") _dealer.DrawCard(DrawTop());
+            foreach (Player player in _players)
             {
                 if (player.Name == playerName) player.DrawCard(DrawTop());
             }
@@ -102,7 +112,7 @@ namespace TexasHoldEm
         }
         public void DrawCardPlayers()
         {
-            foreach (Player player in Players)
+            foreach (Player player in _players)
             {
                 player.DrawCard(DrawTop());
             }
@@ -125,15 +135,16 @@ namespace TexasHoldEm
                     break;
 
                 case "Raise":
-                    if (Players[playerIndex].AllIn) break; //all in's cant raise.
+                    if (_players[playerIndex].AllIn) throw new Exception("all in's cant raise.");
                     _raisePlayerIndex = playerIndex;
+                    Console.WriteLine("PokerGame -> take turn -> 140 ->index is " + playerIndex.ToString());
                     RaiseBet(playerIndex, bet);
                     break;
 
                 case "Match":
                     MatchBet(playerIndex);
                     int i = playerIndex;
-                    if (i == numPlayers) i = 0;
+                    if (i == _numPlayers-1) i = 0;
                     else i++;
                     return i == _raisePlayerIndex; //check if all players have reacted to the raise bet
 
@@ -151,30 +162,38 @@ namespace TexasHoldEm
         }
         private void RaiseBet(int playerIndex, int amount)
         {
-            Players[playerIndex].RaiseBet(amount);
+            _players[playerIndex].RaiseBet(amount);
             _pot += amount;
             _betAmount = amount;
         }
         public void MatchBet(int playerIndex)
         {
-            Players[playerIndex].RaiseBet(_betAmount);
-            _pot += _betAmount;
+            try
+            {
+                _players[playerIndex].RaiseBet(_betAmount);
+                _pot += _betAmount;
+            }
+            catch
+            {
+                throw new Exception("Index out of range error in PokerGame -> TakeTurn: player index is " + playerIndex.ToString() + "," + ToString());
+            }
+
         }
         public void Fold(int playerIndex)
         {
-            if (!Players[playerIndex].Playing)
+            if (!_players[playerIndex].Playing)
             {
                 throw new Exception("Cant fold if player has already folded");
             }
             else
             {
-                Players[playerIndex].Fold();
+                _players[playerIndex].Fold();
                 //check if one left
 
                 int k = 0;
-                for (int i = 0; i < numPlayers; i++)
+                for (int i = 0; i < _numPlayers; i++)
                 {
-                    if (Players[i].Playing == true) { k++;}
+                    if (_players[i].Playing == true) { k++;}
                 }
                 if (k == 1) EndGame();
             }
@@ -189,8 +208,8 @@ namespace TexasHoldEm
         public void EndGame()
         {
             int numberOfWinners = 0;
-            int[] winningPlayers = new int[numPlayers];
-            int[] scores = new int[Players.Length + 1];
+            int[] winningPlayers = new int[_numPlayers];
+            int[] scores = new int[_players.Length + 1];
 
             //determine winner and points
             scores = GetScores();
@@ -202,33 +221,35 @@ namespace TexasHoldEm
             }
             if(numberOfWinners>1)
             {
-                
-                scores[0] = DetermineWinnerOfTie(winningPlayers)[0];
-                if(scores[1]!=0)
+                List<int> tieChecker;
+                tieChecker = DetermineWinnerOfTie(winningPlayers).ToList();
+                scores[0] = tieChecker[0];
+                if(tieChecker[1]!=0)
                 {
                     //case for a true tie: split the pot
-                    //TODO: perform proper split based on number of tied players
-                    int splitPot = _pot/numPlayers;
-                    foreach(Player player in Players)
+                    int splitPot = _pot/ tieChecker[2];
+                    _winner = "Tie between ";
+                    for (int j = 0; j < tieChecker[1]; j++)
                     {
-                        player.SetFunds(splitPot);
+                        _players[tieChecker[3+j]].SetFunds(splitPot); _winner += _players[tieChecker[3 + j]].Name + " and ";
                     }
-
-                    _winner = "Tie";
-                    
-                    foreach (Player player in Players)
+                    _winner.Trim();
+                    _winner.TrimEnd('d');
+                    _winner.TrimEnd('n');
+                    _winner.TrimEnd('a');
+                    foreach (Player player in _players)
                     {
                         player.Playing = false;
                     }
                     return;
                 }
             }
-            _winner = Players[scores[0]].Name + " is the winner!";
+            _winner = _players[scores[0]].Name + " is the winner!";
             //Give money to winner
-            Players[scores[0]].SetFunds(_pot);
+            _players[scores[0]].SetFunds(_pot);
 
             //stop players from continuing to play
-            foreach (Player player in Players)
+            foreach (Player player in _players)
             {
                 player.Playing = false;
             }
@@ -244,26 +265,26 @@ namespace TexasHoldEm
             int winner = 0;
             int winningScore = 0;
             int scoreBuffer = 0;
-            int[] scores = new int[Players.Length + 1]; //zero is winner index of Players
+            int[] scores = new int[_players.Length + 1]; //zero is winner index of Players
 
-            if (Dealer.HandIndex < 5) throw new Exception("Poker Hand Value only works with all five dealer cards! Need to revise this section or prevent this exception.");
+            if (_dealer.HandIndex < 5) throw new Exception("Poker Hand Value only works with all five dealer cards! Need to revise this section or prevent this exception.");
             
-            for (int i = 0; i < Players.Length; i++)
+            for (int i = 0; i < _players.Length; i++)
             {
-                if (Players[i].Playing)
+                if (_players[i].Playing)
                 {
                     List<int> valueBuffer = null;
-                    valueBuffer = Dealer.GetValues().ToList();
+                    valueBuffer = _dealer.GetValues().ToList();
                     List<string> suitBuffer = null;
-                    suitBuffer = Dealer.GetSuits().ToList();
+                    suitBuffer = _dealer.GetSuits().ToList();
 
                     //combine dealer and player hand 
-                    valueBuffer.AddRange(Players[i].GetValues().ToList());
-                    suitBuffer.AddRange(Players[i].GetSuits().ToList());
+                    valueBuffer.AddRange(_players[i].GetValues().ToList());
+                    suitBuffer.AddRange(_players[i].GetSuits().ToList());
 
                     //determine winning score
                     scoreBuffer = HandValueCalculator.BOF_Calculate(valueBuffer.ToArray(), suitBuffer.ToArray());
-                    Players[i].Score = scoreBuffer;
+                    _players[i].Score = scoreBuffer;
                     if (winningScore < scoreBuffer)
                     {
                         winningScore = scoreBuffer;
@@ -283,7 +304,7 @@ namespace TexasHoldEm
         /// Determines if there is a tie or a a winner between players with similar scores.
         /// </summary>
         /// <param name="tieList">list of players based on index of class variable Players in no particular order</param>
-        /// <returns>array with index zero as winning player and index 1 as zero if no tie otherwise 1</returns>
+        /// <returns>dynamic array with index zero as winning player and index 1 as zero if no tie otherwise 1, followed by number of winners and thier indexes in cases with a true tie</returns>
         private int[] DetermineWinnerOfTie(int[] tieList)
         {
 
@@ -291,30 +312,37 @@ namespace TexasHoldEm
             int[] PlayerHand = new int[2];
             int[] maxValues = new int[tieList.Length];
             List<int> newTieList = new List<int>();
+            int[] returnBuffer = new int[tieList.Length + 3];
             int maxValue = 0;
             int maxCounter = 0;
             int winner = -1;
 
             //get player hands
+
+            //2,12  3,2
             for (int i = 0; i < tieList.Length; i++)
             {
-                PlayerHand = Players[tieList[i]].GetValues();
+                PlayerHand = _players[tieList[i]].GetValues();
                 for (int u = 0; u < 2; u++)
-                {
+                {//ace high
                     if (PlayerHand[u] == 1) PlayerHand[u] = 14;
                 }
                 PlayerHand = PlayerHand.OrderByDescending(c => c).ToArray();
                 maxValues[i] = PlayerHand[0];
+                Console.WriteLine("PokerGame -> 329 -> hand values: " + maxValues[i].ToString());
+
             }
 
             //determine if only one maximum
+
+            //12,2
             maxValue = maxValues.Max();
-            Console.WriteLine("PokerGame -> 312 -> max value: " + maxValue.ToString());
+            Console.WriteLine("PokerGame -> 336 -> max value: " + maxValue.ToString());
             for (int i = 0; i < tieList.Length; i++)
             {
+                Console.WriteLine("PokerGame -> 338 -> determine max loop: " + maxValues[i].ToString());
                 if (maxValues[i] == maxValue)
                 {
-                    Console.WriteLine("PokerGame -> 317 -> determine max loop: " + maxValues[i].ToString());
                     winner = tieList[i];
                     newTieList.Add(tieList[i]);
                     maxCounter++;
@@ -324,17 +352,18 @@ namespace TexasHoldEm
             //not a true tie
             if(maxCounter==1)
             {
-                tieList = new int[2];
-                tieList[0] = winner;
-                tieList[1] = 0;
-                return tieList;
+                Console.WriteLine("not a true tie");
+                
+                returnBuffer[0] = winner;
+                returnBuffer[1] = 0;
+                return returnBuffer;
             }
 
             //TODO: getting bad value for console writeline at 349
             //now check each second highest (of two) player card
             for (int i = 0; i < newTieList.Count; i++)
             {
-                PlayerHand = Players[newTieList[i]].GetValues();
+                PlayerHand = _players[newTieList[i]].GetValues();
                 for (int u = 0; u < 2; u++)
                 {
                     if (PlayerHand[u] == 1) PlayerHand[u] = 14;
@@ -346,12 +375,12 @@ namespace TexasHoldEm
             maxCounter = 0;
             winner = -1;
             maxValue = maxValues.Max();
-            Console.WriteLine("PokerGame -> 347 -> max value: " + maxValue.ToString());
+            Console.WriteLine("PokerGame -> 372 -> max value number two: " + maxValue.ToString());
             for (int i = 0; i < newTieList.Count; i++)
             {
                 if (maxValues[i] == maxValue)
                 {
-                    Console.WriteLine("PokerGame -> 353 -> determine max loop: " + maxValues[i].ToString());
+                    Console.WriteLine("PokerGame -> 377 -> determine max loop number two: " + maxValues[i].ToString());
                     winner = newTieList[i];
                     maxCounter++;
                 }
@@ -360,26 +389,37 @@ namespace TexasHoldEm
             //not a true tie
             if (maxCounter == 1)
             {
-                tieList = new int[2];
-                tieList[0] = winner;
-                tieList[1] = 0;
-                return tieList;
+                Console.WriteLine("not a true tie, but same high card in hand");
+                returnBuffer[0] = winner;
+                returnBuffer[1] = 0;
+                return returnBuffer;
             }
 
             //a true tie
-            tieList = new int[2];
-            tieList[0] = winner;
-            tieList[1] = 1;
-            return tieList;
+            Console.WriteLine("WOW, a true tie!");
+
+            returnBuffer[0] = winner;
+            returnBuffer[1] = 1;
+            returnBuffer[2] = newTieList.Count;
+            for (int d = 0; d < newTieList.Count; d++)
+            {
+                returnBuffer[3+d] = newTieList[d];
+            }
+            return returnBuffer;
         }
 
         #endregion
 
 #region debug
+
+        /// <summary>
+        /// Outputs the state of the game into a string.
+        /// </summary>
+        /// <returns>state of game</returns>
         public override string ToString()
         {
             string temp = "";
-            foreach (Player player in Players)
+            foreach (Player player in _players)
             {
                 temp += player.Name + " playing is " + player.Playing.ToString() + " and funds are " + player.Funds.ToString() + " and bet is " + player.Bet.ToString() + ", ";
             }

@@ -35,13 +35,19 @@ namespace TexasHoldEm
 
         private void InitializePlayers()
         {
-            //TODO: collect data from xml instead
-            string[] args = { "Jason", "Annie","Oswald" , "Cooper"};
+            //TODO: collect data from xml instead of here
+            string[] names = { "Jason", "Annie","Oswald" , "Cooper"};
             int numPlayers = 4;
             int funds = 1000;
+            int minBet = 10;
+            int maxBet = 100;
+            bool noLimits = false;
+            int smallBlind = 5;
+            int bigBlind = 10;
+            //TODO: make sure small blind < big blind, and minbet < twice max bet, and no limits means minbet and maxbet need not be assigned
 
             myAI = new TexasAI();
-            myGame = new PokerGame(args, 5, numPlayers, funds);
+            myGame = new PokerGame(names, 5, numPlayers, funds, noLimits, smallBlind, bigBlind, minBet, maxBet);
         }
 
         #region state machine (changes _stage property of Game class)
@@ -56,13 +62,14 @@ namespace TexasHoldEm
             if ((myGame.Stage == "Match or Fold") || (myGame.Stage == "Raise or Hold or Fold"))
             {
                 int k = 0;
-                foreach (Player player in myGame.Players)
+                foreach (Player player in myGame._players)
                 {
                     if (player.Playing) { k++; }
                 }
                 if (k == 2)
                 {
                     myGame.TakeTurn("Fold");
+                    myGame.Stage = "End";
                     UpdateEndGameUI();
 
                 }
@@ -118,12 +125,12 @@ namespace TexasHoldEm
             if (myGame.Stage == "Raise or Hold or Fold")
             {
                 //Checks if raise is appropriate.
-                if ((myGame._betAmountPlayerBuffer <= 0) || (myGame._betAmountPlayerBuffer > myGame.Players[0].Funds))
+                if ((myGame._betAmountPlayerBuffer < myGame._minBet) || (myGame._betAmountPlayerBuffer > myGame._maxBet) || (myGame._betAmountPlayerBuffer > myGame._players[0].Funds))
                 {
-                    UpdateLeftPanel("Dealer won't accept your bet!");
+                    UpdateLeftPanel("Dealer won't accept your bet!" + myGame._betAmountPlayerBuffer);
                     return;
                 }
-                myGame.TakeTurn("Raise",0, myGame._betAmountPlayerBuffer);
+                myGame.TakeTurn("Raise", 0, myGame._betAmountPlayerBuffer);
                 myGame.Stage = "Raise";
                 UpdateTopLeftPanel();
                 WaitForAI();
@@ -143,9 +150,7 @@ namespace TexasHoldEm
                 //TODO: needs restructuring as some methods need to occur at end of game and some at beginning.
                 myGame.TakeTurn("New Hand");
                 myGame.Stage = "Raise or Hold or Fold";
-                ResetMainPanel();
-                UpdateTopLeftPanel();
-                UpdateRightPanelImages();
+                UpdateNewGameUI();
 
                 //Start game
                 WaitForAI();
@@ -162,15 +167,15 @@ namespace TexasHoldEm
         else if (myGame.Stage == "Raise or Hold or Fold") { DealerDrawNext();}
 
         //AI must continue if player stops playing.
-        if(!myGame.Players[0].Playing)
+        if(!myGame._players[0].Playing)
         {
             //waits until all dealer cards are drawn or all but one players have folded.
             int k = 0;
-            foreach(Player player in myGame.Players)
+            foreach(Player player in myGame._players)
             {
                  if (player.Playing) { k++; }
             }
-                if ((k!=0)&&(myGame.Dealer.HandIndex<=4))
+                if ((k!=0)&&(myGame._dealer.HandIndex<=4))
             {
                 WaitForAI();
             }
@@ -183,37 +188,24 @@ namespace TexasHoldEm
         private void DealerDrawNext()
         {
             myGame.DrawCard(-1);
-            switch (myGame.Dealer.HandIndex)
+            switch (myGame._dealer.HandIndex)
             {
 
                 case 3:
-                    imgDealer3.Source = new BitmapImage(new Uri(@myGame.Dealer._myHand[2].Asset));
+                    imgDealer3.Source = new BitmapImage(new Uri(@myGame._dealer._myHand[2].Asset));
                     break;
 
                 case 4:
-                    imgDealer4.Source = new BitmapImage(new Uri(@myGame.Dealer._myHand[3].Asset));
+                    imgDealer4.Source = new BitmapImage(new Uri(@myGame._dealer._myHand[3].Asset));
                     break;
 
                 case 5:
-                    imgDealer5.Source = new BitmapImage(new Uri(@myGame.Dealer._myHand[4].Asset));
+                    imgDealer5.Source = new BitmapImage(new Uri(@myGame._dealer._myHand[4].Asset));
+                    myGame.Stage = "End";
                     myGame.EndGame();
                     UpdateEndGameUI();
                     break;
             }
-        }
-
-        /// <summary>
-        /// Sets stage to end, updates the UI when the game ends
-        /// </summary>
-        private void UpdateEndGameUI()
-        {
-            myGame.Stage = "End";
-            PrintScores();
-            UpdateTopLeftPanel();
-            UpdateRightPanelStats();
-
-            //unique endgame updates
-            TextBlock_GameWinner.Text = myGame._winner;
         }
 
         #endregion
@@ -225,10 +217,10 @@ namespace TexasHoldEm
         /// </summary>
         private void PrintScores()
         {
-            string buffer = "Game: " + myGame.gameNumber.ToString() + "\n";
-            for (int i = 0; i < myGame.numPlayers ; i++)
+            string buffer = "Game: " + myGame._gameNumber.ToString() + "\n";
+            for (int i = 0; i < myGame._numPlayers ; i++)
             {
-                buffer += myGame.Players[i].Name.ToString() + "'s Score: " + myGame.Players[i].Score.ToString() + "\n";
+                buffer += myGame._players[i].Name.ToString() + "'s Score: " + myGame._players[i].Score.ToString() + "\n";
             }
             UpdateLeftPanel(buffer);
         }
@@ -241,7 +233,6 @@ namespace TexasHoldEm
         {
             string topBuffer = "\n" + args;
             string bottomBuffer = TextBox_ScrollViewer_LeftSide.Text;
-            topBuffer += "\n";
             topBuffer += bottomBuffer;
             TextBox_ScrollViewer_LeftSide.Text = topBuffer;
         }
@@ -251,46 +242,49 @@ namespace TexasHoldEm
         /// </summary>
         private void UpdateRightPanelStats()
         {
-            TextBlock_Player2_Name.Text = myGame.Players[1].Name.ToString();
-            TextBlock_Player2_Funds.Text = "Funds: " + myGame.Players[1].Funds.ToString();
+            TextBlock_Player2_Name.Text = myGame._players[1].Name.ToString();
+            TextBlock_Player2_Funds.Text = "Funds: " + myGame._players[1].Funds.ToString();
             TextBlock_Player3_Name.Text = null;
             TextBlock_Player3_Funds.Text = null;
             TextBlock_Player4_Name.Text = null;
             TextBlock_Player4_Funds.Text = null;
-            if (myGame.numPlayers > 2)
+            if (myGame._numPlayers > 2)
             {
-                TextBlock_Player3_Funds.Text = "Funds: " + myGame.Players[2].Funds.ToString();
-                TextBlock_Player3_Name.Text = myGame.Players[2].Name.ToString();
+                TextBlock_Player3_Funds.Text = "Funds: " + myGame._players[2].Funds.ToString();
+                TextBlock_Player3_Name.Text = myGame._players[2].Name.ToString();
             }
-            if (myGame.numPlayers > 3)
+            if (myGame._numPlayers > 3)
             {
-                TextBlock_Player4_Funds.Text = "Funds: " + myGame.Players[3].Funds.ToString();
-                TextBlock_Player4_Name.Text = myGame.Players[3].Name.ToString();
+                TextBlock_Player4_Funds.Text = "Funds: " + myGame._players[3].Funds.ToString();
+                TextBlock_Player4_Name.Text = myGame._players[3].Name.ToString();
             }
-            if (myGame.numPlayers > 4)
+            if (myGame._numPlayers > 4)
             {
                 throw new Exception("Only supports 4 players");
             }
         }
+
+
+        //TODO: make dynamic scrollable grid based on number of players in a session.
 
         /// <summary>
         /// updates right panel images
         /// </summary>
         private void UpdateRightPanelImages()
         {
-            imgONE1.Source = new BitmapImage(new Uri(@myGame.Players[1]._myHand[0].Asset));
-            imgONE2.Source = new BitmapImage(new Uri(@myGame.Players[1]._myHand[1].Asset));
-            if (myGame.numPlayers > 2)
+            imgONE1.Source = new BitmapImage(new Uri(@myGame._players[1]._myHand[0].Asset));
+            imgONE2.Source = new BitmapImage(new Uri(@myGame._players[1]._myHand[1].Asset));
+            if (myGame._numPlayers > 2)
             {
-                imgTWO1.Source = new BitmapImage(new Uri(@myGame.Players[2]._myHand[0].Asset));
-                imgTWO2.Source = new BitmapImage(new Uri(@myGame.Players[2]._myHand[1].Asset));
+                imgTWO1.Source = new BitmapImage(new Uri(@myGame._players[2]._myHand[0].Asset));
+                imgTWO2.Source = new BitmapImage(new Uri(@myGame._players[2]._myHand[1].Asset));
             }
-            if (myGame.numPlayers > 3)
+            if (myGame._numPlayers > 3)
             {
-                imgTHREE1.Source = new BitmapImage(new Uri(@myGame.Players[3]._myHand[0].Asset));
-                imgTHREE2.Source = new BitmapImage(new Uri(@myGame.Players[3]._myHand[1].Asset));
+                imgTHREE1.Source = new BitmapImage(new Uri(@myGame._players[3]._myHand[0].Asset));
+                imgTHREE2.Source = new BitmapImage(new Uri(@myGame._players[3]._myHand[1].Asset));
             }
-            if (myGame.numPlayers > 4)
+            if (myGame._numPlayers > 4)
             {
                 throw new Exception("Only supports 4 players");
             }
@@ -310,10 +304,10 @@ namespace TexasHoldEm
             }
 
             TextBlock_GameWinner.Text = null;
-            imgDealer1.Source = new BitmapImage(new Uri(@myGame.Dealer._myHand[0].Asset));
-            imgDealer2.Source = new BitmapImage(new Uri(@myGame.Dealer._myHand[1].Asset));
-            imgMain1.Source = new BitmapImage(new Uri(@myGame.Players[0]._myHand[0].Asset));
-            imgMain2.Source = new BitmapImage(new Uri(@myGame.Players[0]._myHand[1].Asset));
+            imgDealer1.Source = new BitmapImage(new Uri(@myGame._dealer._myHand[0].Asset));
+            imgDealer2.Source = new BitmapImage(new Uri(@myGame._dealer._myHand[1].Asset));
+            imgMain1.Source = new BitmapImage(new Uri(@myGame._players[0]._myHand[0].Asset));
+            imgMain2.Source = new BitmapImage(new Uri(@myGame._players[0]._myHand[1].Asset));
         }
 
         /// <summary>
@@ -321,16 +315,41 @@ namespace TexasHoldEm
         /// </summary>
         private void UpdateTopLeftPanel()
         {
-            TextBlock_GameNumberCounter.Text = "Game " + myGame.gameNumber.ToString();
-            TextBlock_CurrentPlayerName.Text =  myGame.Players[0].Name.ToString();
+            TextBlock_GameNumberCounter.Text = "Game " + myGame._gameNumber.ToString();
+            TextBlock_CurrentPlayerName.Text =  myGame._players[0].Name.ToString();
             TextBlock_Game_Pot.Text = "Current Pot: " +  myGame._pot.ToString();
-            TextBlock_Player1_CurrentBet.Text = "Current Bet: " + myGame.Players[0].Bet.ToString();
-            TextBlock_Player1_Funds.Text = "Funds: " + myGame.Players[0].Funds.ToString();
-            TextBlock_Player1_NetProfit.Text = "Net: " + (myGame.Players[0].Funds-myGame.Players[0].OriginalFunds).ToString();
+            TextBlock_Player1_CurrentBet.Text = "Current Bet: " + myGame._players[0].Bet.ToString();
+            TextBlock_Player1_Funds.Text = "Funds: " + myGame._players[0].Funds.ToString();
+            TextBlock_Player1_NetProfit.Text = "Net: " + (myGame._players[0].Funds-myGame._players[0].OriginalFunds).ToString();
         }
 
         /// <summary>
-        /// Raise Textbox Input Updater
+        /// Updates the UI when the game ends
+        /// </summary>
+        private void UpdateEndGameUI()
+        {
+            PrintScores();
+            UpdateTopLeftPanel();
+            UpdateRightPanelStats();
+
+            //unique endgame updates
+            TextBlock_GameWinner.Text = myGame._winner;
+        }
+
+        /// <summary>
+        /// Updates the UI when the game starts
+        /// </summary>
+        private void UpdateNewGameUI()
+        {
+            MyRaise_TextChanged(this, null);
+            ResetMainPanel();
+            UpdateTopLeftPanel();
+            UpdateRightPanelImages();
+        }
+
+
+        /// <summary>
+        /// Player's bet counter which is only processed when raise is clicked but is changed whenever the texbox is changed.
         /// </summary>
         /// <param name="sender"></param>
         /// <param name="e"></param>
