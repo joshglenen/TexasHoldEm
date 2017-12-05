@@ -99,6 +99,7 @@
         <Button Content="More Info" HorizontalAlignment="Left" Margin="389,12,0,0" Background="SandyBrown" VerticalAlignment="Top" Width="174" FontSize="16" Height="40"/>
         <Button Content="Strategy Guide" HorizontalAlignment="Left" Margin="389,58,0,0" Background="SandyBrown" VerticalAlignment="Top" Width="174" FontSize="16" Height="40"/>
         <Button Content="Math Guide" HorizontalAlignment="Left" Margin="389,103,0,0" Background="SandyBrown" VerticalAlignment="Top" Width="174" FontSize="16" Height="40"/>
+        <TextBlock HorizontalAlignment="Left" FontSize="16" TextElement.Foreground="YellowGreen"  Margin="188,154,0,0" TextWrapping="Wrap" x:Name="TextBlock_MinBetMaxBet" Text="ERROR ERROR" VerticalAlignment="Top" Width="266"/>
 
     </Grid>
 </Window>

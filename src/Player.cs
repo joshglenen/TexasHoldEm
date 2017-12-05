@@ -1,8 +1,9 @@
 ﻿using static TexasHoldEm.CardBase;
+using static TexasHoldEm.Personality;
 
 namespace TexasHoldEm
 {
-    class Player
+    class Player : Personality
     {
         //Session information
         public string Name;
@@ -18,7 +19,7 @@ namespace TexasHoldEm
         public bool Playing;
         public bool AllIn;
 
-        public Player(string name, int numberOfCardsInHand = 2, int funds = 100)
+        public Player(string name, int numberOfCardsInHand = 2, int funds = 100, string personality = null) : base(personality)
         {
             Score = 0;
             OriginalFunds = funds;
@@ -52,6 +53,11 @@ namespace TexasHoldEm
                 buffer[i] = _myHand[i].Suit;
             }
             return buffer;
+        }
+
+        public void BlindBet(int amount)
+        {
+            Funds -= amount;
         }
 
         public void DrawCard(CardBase Card)
@@ -90,7 +96,7 @@ namespace TexasHoldEm
 
         } //replaces a bet or creates one
 
-        //TODO: fix raise, it will crash when it should not!
+        //TODO: fix raise, it will not resolve in an end of round!
         public bool RaiseBet(int bet)
         {
             if (AllIn) return false;

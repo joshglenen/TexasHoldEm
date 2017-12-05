@@ -9,82 +9,82 @@ namespace TexasHoldEm
     class PokerGame : DeckOfCards
     {
 
-        #region session vars (do not change in a session)
-        public Player[] _players;
-        public Player _dealer;
-        public int _numPlayers;
-        public int _gameNumber;
-        public int _minBet;
-        public int _maxBet;
-        public bool _noLimits;
-        public int _smallBlind;
-        public int _bigBlind;
-        #endregion
+    #region session vars (do not change in a session)
+    public Player[] _players;
+    public Player _dealer;
+    public int _numPlayers;
+    public int _gameNumber;
+    public int _minBet;
+    public int _maxBet;
+    public bool _noLimits;
+    public int _smallBlind;
+    public int _bigBlind;
+    #endregion
 
-        #region game vars (change every game in a session)
-        public int _pot { get; private set; }
-        public int _betAmount { get; private set; }
-        public int _raisePlayerIndex;
-        public int _betAmountPlayerBuffer;
-        private string _stage;
-        public string _winner { get; private set; }
-        public string Stage { get { return _stage; } set {_stage = value; Console.WriteLine("@Player@ Stage now set to: " + _stage); } }
+    #region game vars (change every game in a session)
+    public int _pot { get; private set; }
+    public int _betAmount { get; private set; }
+    public int _raisePlayerIndex;
+    public int _betAmountPlayerBuffer;
+    private string _stage;
+    public string _winner { get; private set; }
+    public string Stage { get { return _stage; } set {_stage = value; Console.WriteLine("Player Stage now set to: " + _stage); } }
 
-        #endregion
+    #endregion
 
-        #region Beginning of game
+    #region Beginning of game
 
-        public PokerGame(string[] names = null, int numCards = 5, int NumPlayers = 2, int funds = 100, bool noLimits = false, int smallBlind = 5, int bigBlind = 10, int minBet = 10, int maxBet = 100)
+    public PokerGame(string[] names = null, int numCards = 5, int NumPlayers = 2, int funds = 100, bool noLimits = false, int smallBlind = 5, int bigBlind = 10, int minBet = 10, int maxBet = 100)
+    {
+        _gameNumber = -1;
+        _minBet = minBet;
+        _maxBet = maxBet;
+        _smallBlind = smallBlind;
+        _bigBlind = bigBlind;
+        _noLimits = noLimits;
+        _players = new Player[NumPlayers];
+        _dealer = new Player("Dealer", 5, 0);
+        _numPlayers = NumPlayers;
+        for (int i = 0; i < NumPlayers; i++)
         {
-            _gameNumber = -1;
-            _minBet = minBet;
-            _maxBet = maxBet;
-            _smallBlind = smallBlind;
-            _bigBlind = bigBlind;
-            _noLimits = noLimits;
-            _players = new Player[NumPlayers];
-            _dealer = new Player("Dealer", 5, 0);
-            _numPlayers = NumPlayers;
-            for (int i = 0; i < NumPlayers; i++)
-            {
-                _players[i] = new Player(names[i], numCards, funds);
-            }
-            NewGame();
+            _players[i] = new Player(names[i], numCards, funds);
         }
-        /// <summary>
-        /// Resets game variables within a session of games. Specific to texas holdem. 
-        /// </summary>
-        public void NewGame()
-        {
-            _winner = "No Winner";
-            _gameNumber++;
-            NewDeck();
-            _pot = 0;
-            _betAmount = 0;
-            _betAmountPlayerBuffer = 0;
-            _raisePlayerIndex = 0;
-            _stage = null;
+        NewGame();
+    }
+    /// <summary>
+    /// Resets game variables within a session of games. Specific to texas holdem. 
+    /// </summary>
+    public void NewGame()
+    {
+        _winner = "No Winner";
+        _gameNumber++;
+        NewDeck();
+        _pot = 0;
+        _betAmount = 0;
+        _betAmountPlayerBuffer = 0;
+        _raisePlayerIndex = 0;
+        _stage = null;
 
-            foreach (Player player in _players)
-            {
-                player.ResetHand();
-                player.DrawCard(DrawTop());
-                player.DrawCard(DrawTop());
-            }
-            _dealer.ResetHand();
-            _dealer.DrawCard(DrawTop());
-            _dealer.DrawCard(DrawTop());
-
-        }
-        private void NewDeck()
+        foreach (Player player in _players)
         {
-            DeckOfCards Buffer = new DeckOfCards();
-            Deck = Buffer.Deck;
-            Buffer = null;
+            player.ResetHand();
+            player.DrawCard(DrawTop());
+            player.DrawCard(DrawTop());
         }
+        _dealer.ResetHand();
+        _dealer.DrawCard(DrawTop());
+        _dealer.DrawCard(DrawTop());
+
+    }
+    private void NewDeck()
+    {
+        DeckOfCards Buffer = new DeckOfCards();
+        Deck = Buffer.Deck;
+        Buffer = null;
+    }
 #endregion
 
-#region Draw Cards
+    #region Draw Cards
         /// <summary>
         /// Draw a card and give it to the player
         /// </summary>
@@ -119,11 +119,12 @@ namespace TexasHoldEm
         }
         #endregion
 
-#region Middle of game
+    #region Middle of game
+
         /// <summary>
         /// All UI friendly actions are now merged into this single method.
         /// </summary>
-        /// <param name="stage">Input of user: Pass,Raise,Match,Fold,New Hand</param>
+        /// <param name="stage">Input of user: Pass,Raise,Match,Fold,New Hand,Blind</param>
         /// <param name="playerIndex">Player in Players</param>
         /// <param name="bet">Amount if raising bet, not required</param>
         /// <returns>checks when all players have responded to a raise</returns>
@@ -137,7 +138,6 @@ namespace TexasHoldEm
                 case "Raise":
                     if (_players[playerIndex].AllIn) throw new Exception("all in's cant raise.");
                     _raisePlayerIndex = playerIndex;
-                    Console.WriteLine("PokerGame -> take turn -> 140 ->index is " + playerIndex.ToString());
                     RaiseBet(playerIndex, bet);
                     break;
 
@@ -156,17 +156,23 @@ namespace TexasHoldEm
                 case "New Hand":
                     NewGame();
                     break;
+
+                case "Blind":
+                    SmallBlind(playerIndex);
+                    BigBlind(playerIndex+1);
+                    break;
             }
 
             return false; //no need for check outside of match bet case.
         }
+
         private void RaiseBet(int playerIndex, int amount)
         {
             _players[playerIndex].RaiseBet(amount);
             _pot += amount;
             _betAmount = amount;
         }
-        public void MatchBet(int playerIndex)
+        private void MatchBet(int playerIndex)
         {
             try
             {
@@ -179,7 +185,7 @@ namespace TexasHoldEm
             }
 
         }
-        public void Fold(int playerIndex)
+        private void Fold(int playerIndex)
         {
             if (!_players[playerIndex].Playing)
             {
@@ -198,9 +204,19 @@ namespace TexasHoldEm
                 if (k == 1) EndGame();
             }
         }
+        private void SmallBlind(int playerIndex)
+        {
+            _players[playerIndex].BlindBet(_smallBlind);
+            _pot += _smallBlind;
+        }
+        private void BigBlind(int playerIndex)
+        {
+            _players[playerIndex].BlindBet(_bigBlind);
+            _pot += _bigBlind;
+        }
         #endregion
 
-#region End of game
+        #region End of game
 
         /// <summary>
         /// Ends the game by calling the getscores class and checking for a tie. Stops the players from playing further.
@@ -312,6 +328,7 @@ namespace TexasHoldEm
             int[] PlayerHand = new int[2];
             int[] maxValues = new int[tieList.Length];
             List<int> newTieList = new List<int>();
+            List<int> newTieList2 = new List<int>();
             int[] returnBuffer = new int[tieList.Length + 3];
             int maxValue = 0;
             int maxCounter = 0;
@@ -382,6 +399,7 @@ namespace TexasHoldEm
                 {
                     Console.WriteLine("PokerGame -> 377 -> determine max loop number two: " + maxValues[i].ToString());
                     winner = newTieList[i];
+                    newTieList2.Add(newTieList[i]);
                     maxCounter++;
                 }
             }
@@ -400,17 +418,17 @@ namespace TexasHoldEm
 
             returnBuffer[0] = winner;
             returnBuffer[1] = 1;
-            returnBuffer[2] = newTieList.Count;
-            for (int d = 0; d < newTieList.Count; d++)
+            returnBuffer[2] = newTieList2.Count;
+            for (int d = 0; d < newTieList2.Count; d++)
             {
-                returnBuffer[3+d] = newTieList[d];
+                returnBuffer[3+d] = newTieList2[d];
             }
             return returnBuffer;
         }
 
         #endregion
 
-#region debug
+    #region debug
 
         /// <summary>
         /// Outputs the state of the game into a string.

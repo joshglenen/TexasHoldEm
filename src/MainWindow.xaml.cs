@@ -48,6 +48,9 @@ namespace TexasHoldEm
 
             myAI = new TexasAI();
             myGame = new PokerGame(names, 5, numPlayers, funds, noLimits, smallBlind, bigBlind, minBet, maxBet);
+            UpdateTopLeftPanel();
+            UpdateRightPanelStats();
+            UpdateTopPanel();
         }
 
         #region state machine (changes _stage property of Game class)
@@ -127,7 +130,7 @@ namespace TexasHoldEm
                 //Checks if raise is appropriate.
                 if ((myGame._betAmountPlayerBuffer < myGame._minBet) || (myGame._betAmountPlayerBuffer > myGame._maxBet) || (myGame._betAmountPlayerBuffer > myGame._players[0].Funds))
                 {
-                    UpdateLeftPanel("Dealer won't accept your bet!" + myGame._betAmountPlayerBuffer);
+                    UpdateLeftPanel("Dealer won't accept your bet of " + myGame._betAmountPlayerBuffer);
                     return;
                 }
                 myGame.TakeTurn("Raise", 0, myGame._betAmountPlayerBuffer);
@@ -150,10 +153,13 @@ namespace TexasHoldEm
                 //TODO: needs restructuring as some methods need to occur at end of game and some at beginning.
                 myGame.TakeTurn("New Hand");
                 myGame.Stage = "Raise or Hold or Fold";
+                myAI.IsNewGame = true;
                 UpdateNewGameUI();
 
                 //Start game
                 WaitForAI();
+                UpdateTopLeftPanel();
+                UpdateRightPanelStats();
             }
         }
 
@@ -212,6 +218,11 @@ namespace TexasHoldEm
 
         #region Menu Methods (changes XAML GUI or reads from it)
 
+        private void UpdateTopPanel()
+        {
+            TextBlock_MinBetMaxBet.Text = "Minimum Bet: " + myGame._minBet.ToString() + " Maximum Bet: " + myGame._maxBet.ToString();
+        }
+
         /// <summary>
         /// Output's each players scores along with the game number at end of game
         /// </summary>
@@ -263,7 +274,6 @@ namespace TexasHoldEm
                 throw new Exception("Only supports 4 players");
             }
         }
-
 
         //TODO: make dynamic scrollable grid based on number of players in a session.
 
@@ -345,8 +355,8 @@ namespace TexasHoldEm
             ResetMainPanel();
             UpdateTopLeftPanel();
             UpdateRightPanelImages();
+            UpdateTopPanel();
         }
-
 
         /// <summary>
         /// Player's bet counter which is only processed when raise is clicked but is changed whenever the texbox is changed.
