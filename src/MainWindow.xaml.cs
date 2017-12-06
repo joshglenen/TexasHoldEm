@@ -313,7 +313,7 @@ namespace TexasHoldEm
                 imgDealer3.Source = new BitmapImage();
             }
 
-            TextBlock_GameWinner.Text = null;
+            TextBlock_GameWinner.Text = "Texas Hold'em";
             imgDealer1.Source = new BitmapImage(new Uri(@myGame._dealer._myHand[0].Asset));
             imgDealer2.Source = new BitmapImage(new Uri(@myGame._dealer._myHand[1].Asset));
             imgMain1.Source = new BitmapImage(new Uri(@myGame._players[0]._myHand[0].Asset));

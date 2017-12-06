@@ -53,7 +53,7 @@ namespace TexasHoldEm
         /// </returns>
         public static UnsignedSortedFloatArray CheckWinner(PokerGame myGame)
         {
-            float[] buffer = new float[myGame.numPlayers];
+            float[] buffer = new float[myGame._numPlayers];
             for (int i = 0; i < buffer.Length; i++)
             {
                 buffer[i] = CheckProbabilityOmnicient(myGame, i);

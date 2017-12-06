@@ -159,7 +159,8 @@ namespace TexasHoldEm
 
                 case "Blind":
                     SmallBlind(playerIndex);
-                    BigBlind(playerIndex+1);
+                    if (playerIndex + 1 < _players.Length) BigBlind(playerIndex + 1);
+                    else BigBlind(0);
                     break;
             }
 
@@ -216,217 +217,215 @@ namespace TexasHoldEm
         }
         #endregion
 
-        #region End of game
+    #region End of game
 
-        /// <summary>
-        /// Ends the game by calling the getscores class and checking for a tie. Stops the players from playing further.
-        /// </summary>
-        public void EndGame()
+    /// <summary>
+    /// Ends the game by calling the getscores class and checking for a tie. Stops the players from playing further.
+    /// </summary>
+    public void EndGame()
+    {
+        List<int> winningPlayers = new List<int>();
+        int[] scores = new int[_players.Length + 1];
+
+        //determine winner and points
+        scores = GetScores();
+
+        //check for tie
+        for (int i = 1; i < scores.Length; i++)
         {
-            int numberOfWinners = 0;
-            int[] winningPlayers = new int[_numPlayers];
-            int[] scores = new int[_players.Length + 1];
-
-            //determine winner and points
-            scores = GetScores();
-
-            //check for tie
-            for (int i = 1; i < scores.Length; i++)
+            if (scores[i] == scores[scores[0] + 1])
             {
-                if (scores[i] == scores[scores[0]+1]) { numberOfWinners++; winningPlayers[numberOfWinners-1] = i - 1; }
-            }
-            if(numberOfWinners>1)
-            {
-                List<int> tieChecker;
-                tieChecker = DetermineWinnerOfTie(winningPlayers).ToList();
-                scores[0] = tieChecker[0];
-                if(tieChecker[1]!=0)
-                {
-                    //case for a true tie: split the pot
-                    int splitPot = _pot/ tieChecker[2];
-                    _winner = "Tie between ";
-                    for (int j = 0; j < tieChecker[1]; j++)
-                    {
-                        _players[tieChecker[3+j]].SetFunds(splitPot); _winner += _players[tieChecker[3 + j]].Name + " and ";
-                    }
-                    _winner.Trim();
-                    _winner.TrimEnd('d');
-                    _winner.TrimEnd('n');
-                    _winner.TrimEnd('a');
-                    foreach (Player player in _players)
-                    {
-                        player.Playing = false;
-                    }
-                    return;
-                }
-            }
-            _winner = _players[scores[0]].Name + " is the winner!";
-            //Give money to winner
-            _players[scores[0]].SetFunds(_pot);
-
-            //stop players from continuing to play
-            foreach (Player player in _players)
-            {
-                player.Playing = false;
+                winningPlayers.Add(i-1);
             }
         }
 
-        /// <summary>
-        /// Determines the scores of each playing hand and returns the winner index of Players followed by the scores of each.
-        /// Assigns the scores to each player.
-        /// </summary>
-        /// <returns>array with 0 as winner id, and 1-x as player 0-x's scores</returns>
-        private int[] GetScores()
+        if(winningPlayers.Count > 1)
         {
-            int winner = 0;
-            int winningScore = 0;
-            int scoreBuffer = 0;
-            int[] scores = new int[_players.Length + 1]; //zero is winner index of Players
-
-            if (_dealer.HandIndex < 5) throw new Exception("Poker Hand Value only works with all five dealer cards! Need to revise this section or prevent this exception.");
-            
-            for (int i = 0; i < _players.Length; i++)
+            List<int> tieChecker;
+            tieChecker = DetermineWinnerOfTie(winningPlayers.ToArray()).ToList();
+            scores[0] = tieChecker[0];
+            if(tieChecker[1]!=0)
             {
-                if (_players[i].Playing)
+                //case for a true tie: split the pot
+
+                int splitPot = _pot/ tieChecker[2];
+                _winner = "Tie between ";
+                for (int j = 0; j < tieChecker[2] - 1; j++)
                 {
-                    List<int> valueBuffer = null;
-                    valueBuffer = _dealer.GetValues().ToList();
-                    List<string> suitBuffer = null;
-                    suitBuffer = _dealer.GetSuits().ToList();
-
-                    //combine dealer and player hand 
-                    valueBuffer.AddRange(_players[i].GetValues().ToList());
-                    suitBuffer.AddRange(_players[i].GetSuits().ToList());
-
-                    //determine winning score
-                    scoreBuffer = HandValueCalculator.BOF_Calculate(valueBuffer.ToArray(), suitBuffer.ToArray());
-                    _players[i].Score = scoreBuffer;
-                    if (winningScore < scoreBuffer)
-                    {
-                        winningScore = scoreBuffer;
-                        winner = i;
-                    }
-                    //update buffer
-                    scores[i + 1] = scoreBuffer;
+                    _players[tieChecker[3+j]].SetFunds(splitPot); _winner += _players[tieChecker[3 + j]].Name + " and ";
                 }
-                else scores[i + 1] = 0;
-            }
-            scores[0] = winner;
-            return scores;
+                _players[tieChecker[tieChecker[2]]].SetFunds(splitPot); _winner += _players[tieChecker[tieChecker[2]]].Name;
 
+
+                foreach (Player player in _players)
+                {
+                    player.Playing = false;
+                }
+                return;
+            }
+        }
+        _winner = _players[scores[0]].Name + " is the winner!";
+        //Give money to winner
+        _players[scores[0]].SetFunds(_pot);
+
+        //stop players from continuing to play
+        foreach (Player player in _players)
+        {
+            player.Playing = false;
+        }
+    }
+
+    /// <summary>
+    /// Determines the scores of each playing hand and returns the winner index of Players followed by the scores of each.
+    /// Assigns the scores to each player.
+    /// </summary>
+    /// <returns>array with 0 as winner id, and 1-x as player 0-x's scores</returns>
+    private int[] GetScores()
+    {
+        int winner = 0;
+        int winningScore = 0;
+        int scoreBuffer = 0;
+        int[] scores = new int[_players.Length + 1]; //zero is winner index of Players
+
+        if (_dealer.HandIndex < 5) throw new Exception("Poker Hand Value only works with all five dealer cards! Need to revise this section or prevent this exception.");
+            
+        for (int i = 0; i < _players.Length; i++)
+        {
+            if (_players[i].Playing)
+            {
+                List<int> valueBuffer = null;
+                valueBuffer = _dealer.GetValues().ToList();
+                List<string> suitBuffer = null;
+                suitBuffer = _dealer.GetSuits().ToList();
+
+                //combine dealer and player hand 
+                valueBuffer.AddRange(_players[i].GetValues().ToList());
+                suitBuffer.AddRange(_players[i].GetSuits().ToList());
+
+                //determine winning score
+                scoreBuffer = HandValueCalculator.BOF_Calculate(valueBuffer.ToArray(), suitBuffer.ToArray());
+                _players[i].Score = scoreBuffer;
+                if (winningScore < scoreBuffer)
+                {
+                    winningScore = scoreBuffer;
+                    winner = i;
+                }
+                //update buffer
+                scores[i + 1] = scoreBuffer;
+            }
+            else scores[i + 1] = 0;
+        }
+        scores[0] = winner;
+        return scores;
+
+    }
+
+    /// <summary>
+    /// Determines if there is a tie or a a winner between players with similar scores.
+    /// </summary>
+    /// <param name="tieList">list of players based on index of class variable Players in no particular order</param>
+    /// <returns>dynamic array with index zero as winning player and index 1 as zero if no tie otherwise 1, followed by number of winners and thier indexes in cases with a true tie</returns>
+    private int[] DetermineWinnerOfTie(int[] tieList)
+    {
+
+        //TODO: when only a subset of players with the same score have the same max value, need to get thier id's and overwrite tieList IMPORTANT
+        int[] PlayerHand = new int[2];
+        int[] maxValues = new int[tieList.Length];
+        List<int> newTieList = new List<int>();
+        List<int> newTieList2 = new List<int>();
+        int[] returnBuffer = new int[tieList.Length + 3];
+        int maxValue = 0;
+        int maxCounter = 0;
+        int winner = -1;
+
+        _players[tieList[0]].SetValues(new int[2] {14,13});
+        _players[tieList[1]].SetValues(new int[2] {14,13});
+
+        //get player hands
+
+        //2,12  3,2
+        for (int i = 0; i < tieList.Length; i++)
+        {
+            PlayerHand = _players[tieList[i]].GetValues();
+            for (int u = 0; u < 2; u++)
+            {
+                //ace high
+                if (PlayerHand[u] == 1) PlayerHand[u] = 14;
+            }
+            PlayerHand = PlayerHand.OrderByDescending(c => c).ToArray();
+            maxValues[i] = PlayerHand[0];
+            //Console.WriteLine("TIE: " + _players[tieList[i]].Name + " has a hand of "  + PlayerHand[0].ToString() + PlayerHand[1].ToString());
         }
 
-        /// <summary>
-        /// Determines if there is a tie or a a winner between players with similar scores.
-        /// </summary>
-        /// <param name="tieList">list of players based on index of class variable Players in no particular order</param>
-        /// <returns>dynamic array with index zero as winning player and index 1 as zero if no tie otherwise 1, followed by number of winners and thier indexes in cases with a true tie</returns>
-        private int[] DetermineWinnerOfTie(int[] tieList)
+        //determine if only one maximum
+
+        //12,2
+        maxValue = maxValues.Max();
+        for (int i = 0; i < tieList.Length; i++)
         {
-
-            //TODO: when only a subset of players with the same score have the same max value, need to get thier id's and overwrite tieList IMPORTANT
-            int[] PlayerHand = new int[2];
-            int[] maxValues = new int[tieList.Length];
-            List<int> newTieList = new List<int>();
-            List<int> newTieList2 = new List<int>();
-            int[] returnBuffer = new int[tieList.Length + 3];
-            int maxValue = 0;
-            int maxCounter = 0;
-            int winner = -1;
-
-            //get player hands
-
-            //2,12  3,2
-            for (int i = 0; i < tieList.Length; i++)
+            if (maxValues[i] == maxValue)
             {
-                PlayerHand = _players[tieList[i]].GetValues();
-                for (int u = 0; u < 2; u++)
-                {//ace high
-                    if (PlayerHand[u] == 1) PlayerHand[u] = 14;
-                }
-                PlayerHand = PlayerHand.OrderByDescending(c => c).ToArray();
-                maxValues[i] = PlayerHand[0];
-                Console.WriteLine("PokerGame -> 329 -> hand values: " + maxValues[i].ToString());
-
+                winner = tieList[i];
+                newTieList.Add(tieList[i]);
+                maxCounter++;
             }
-
-            //determine if only one maximum
-
-            //12,2
-            maxValue = maxValues.Max();
-            Console.WriteLine("PokerGame -> 336 -> max value: " + maxValue.ToString());
-            for (int i = 0; i < tieList.Length; i++)
-            {
-                Console.WriteLine("PokerGame -> 338 -> determine max loop: " + maxValues[i].ToString());
-                if (maxValues[i] == maxValue)
-                {
-                    winner = tieList[i];
-                    newTieList.Add(tieList[i]);
-                    maxCounter++;
-                }
-            }
+        }
             
-            //not a true tie
-            if(maxCounter==1)
-            {
-                Console.WriteLine("not a true tie");
-                
-                returnBuffer[0] = winner;
-                returnBuffer[1] = 0;
-                return returnBuffer;
-            }
-
-            //TODO: getting bad value for console writeline at 349
-            //now check each second highest (of two) player card
-            for (int i = 0; i < newTieList.Count; i++)
-            {
-                PlayerHand = _players[newTieList[i]].GetValues();
-                for (int u = 0; u < 2; u++)
-                {
-                    if (PlayerHand[u] == 1) PlayerHand[u] = 14;
-                }
-                PlayerHand = PlayerHand.OrderByDescending(c => c).ToArray();
-                maxValues[i] = PlayerHand[1];
-            }
-
-            maxCounter = 0;
-            winner = -1;
-            maxValue = maxValues.Max();
-            Console.WriteLine("PokerGame -> 372 -> max value number two: " + maxValue.ToString());
-            for (int i = 0; i < newTieList.Count; i++)
-            {
-                if (maxValues[i] == maxValue)
-                {
-                    Console.WriteLine("PokerGame -> 377 -> determine max loop number two: " + maxValues[i].ToString());
-                    winner = newTieList[i];
-                    newTieList2.Add(newTieList[i]);
-                    maxCounter++;
-                }
-            }
-
-            //not a true tie
-            if (maxCounter == 1)
-            {
-                Console.WriteLine("not a true tie, but same high card in hand");
-                returnBuffer[0] = winner;
-                returnBuffer[1] = 0;
-                return returnBuffer;
-            }
-
-            //a true tie
-            Console.WriteLine("WOW, a true tie!");
-
+        //not a true tie
+        if(maxCounter==1)
+        {
             returnBuffer[0] = winner;
-            returnBuffer[1] = 1;
-            returnBuffer[2] = newTieList2.Count;
-            for (int d = 0; d < newTieList2.Count; d++)
-            {
-                returnBuffer[3+d] = newTieList2[d];
-            }
+            returnBuffer[1] = 0;
             return returnBuffer;
         }
 
-        #endregion
+        //TODO: getting bad value for console writeline at 349
+        //now check each second highest (of two) player card
+        for (int i = 0; i < newTieList.Count; i++)
+        {
+            PlayerHand = _players[newTieList[i]].GetValues();
+            for (int u = 0; u < 2; u++)
+            {
+                if (PlayerHand[u] == 1) PlayerHand[u] = 14;
+            }
+            PlayerHand = PlayerHand.OrderByDescending(c => c).ToArray();
+            maxValues[i] = PlayerHand[1];
+        }
+
+        maxCounter = 0;
+        winner = -1;
+        maxValue = maxValues.Max();
+        for (int i = 0; i < newTieList.Count; i++)
+        {
+            if (maxValues[i] == maxValue)
+            {
+                winner = newTieList[i];
+                newTieList2.Add(newTieList[i]);
+                maxCounter++;
+                }
+            }
+
+        //not a true tie
+        if (maxCounter == 1)
+        {
+            returnBuffer[0] = winner;
+            returnBuffer[1] = 0;
+            return returnBuffer;
+        }
+
+        //a true tie
+        returnBuffer[0] = winner;
+        returnBuffer[1] = 1;
+        returnBuffer[2] = newTieList2.Count;
+        if (newTieList2.Count < 2) throw new IndexOutOfRangeException("Tie list cannot contain less than two people. Are the card values accurate?");
+        for (int d = 0; d < newTieList2.Count; d++)
+        {
+            returnBuffer[3+d] = newTieList2[d];
+        }
+        return returnBuffer;
+    }
+
+    #endregion
 
     #region debug
 

@@ -61,13 +61,14 @@ namespace TexasHoldEm
                     if(IsNewGame)
                     {
                         IsNewGame = false;
-                        if (PlayerGoesFirst == myGame._numPlayers - 1)
+                        PlayersTurn = PlayerGoesFirst;
+                        BlindRounds(myGame);
+
+                        PlayerGoesFirst++;
+                        if (PlayerGoesFirst == myGame._players.Length)
                         {
                             PlayerGoesFirst = 0;
                         }
-                        PlayersTurn = PlayerGoesFirst;
-                        BlindRounds(myGame);
-                        PlayerGoesFirst++;
                     }
                     RaiseOrHoldOrFold(myGame);
                     break;
@@ -75,16 +76,14 @@ namespace TexasHoldEm
             return AI_Stage;
 
         }
-
         private void RaiseOrHoldOrFold(PokerGame myGame)
         {
             if (PlayersTurn == 0)
             {
-                Console.WriteLine("@" + myGame._players[PlayersTurn].Name + "'s turn");
+                Console.WriteLine("@ my turn!");
                 PlayersTurn++;
                 return;
             }
-
             Console.WriteLine("@" + myGame._players[PlayersTurn].Name + "'s turn!");
 
             //TODO: not always hold
@@ -92,10 +91,11 @@ namespace TexasHoldEm
 
             //repeat full round
             PlayersTurn++;
-            if (PlayersTurn == myGame._numPlayers)
+            if (PlayersTurn == myGame._players.Length)
             {
                 PlayersTurn = 0;
             }
+
             RaiseOrHoldOrFold(myGame);
             return;
         }
@@ -104,7 +104,15 @@ namespace TexasHoldEm
             Console.WriteLine("@@ BLIND ROUND");
             myGame.TakeTurn("Blind", PlayersTurn);
             PlayersTurn++;
+            if (PlayersTurn == myGame._players.Length)
+            {
+                PlayersTurn = 0;
+            }
             PlayersTurn++;
+            if (PlayersTurn == myGame._players.Length)
+            {
+                PlayersTurn = 0;
+            }
         }
         private void AI_Fold(PokerGame myGame, int playerIndex)
         {

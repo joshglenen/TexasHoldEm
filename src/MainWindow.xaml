@@ -9,7 +9,7 @@
         
         Top="0" Left="0"  ResizeMode="CanResize" 
         
-        Title="Texas Hold'Em" Height="720" Width="1280" MinHeight="720" MinWidth="1280" MaxHeight="2560" MaxWidth="1440">
+        Title="Texas Hold'em" Height="720" Width="1280" MinHeight="720" MinWidth="1280" MaxHeight="2560" MaxWidth="1440">
 
 
     <Grid Margin="0,1,0,0">
@@ -92,7 +92,7 @@
         <TextBlock HorizontalAlignment="Left" FontSize="16" TextElement.Foreground="YellowGreen"  Margin="10,89,0,0" TextWrapping="Wrap" x:Name="TextBlock_Player1_NetProfit" Text="Net: 0" VerticalAlignment="Top" Width="173"/>
         <TextBlock HorizontalAlignment="Left" FontSize="16" TextElement.Foreground="YellowGreen"  Margin="10,110,0,0" TextWrapping="Wrap" x:Name="TextBlock_Player1_CurrentBet" Text="Bet: 0" VerticalAlignment="Top" Width="173"/>
         <TextBlock HorizontalAlignment="Left" FontSize="16" TextElement.Foreground="YellowGreen"  Margin="10,131,0,0" TextWrapping="Wrap" x:Name="TextBlock_Game_Pot" Text="Pot: 0" VerticalAlignment="Top" Width="173"/>
-        <TextBlock HorizontalAlignment="Left" TextElement.FontSize="22" Name="TextBlock_GameWinner" TextAlignment="Center" TextElement.FontStyle ="Italic"  TextElement.Foreground="Black" Margin="516,408,0,0" TextWrapping="Wrap" Text="Texas Hold'em" VerticalAlignment="Top" Width="246" Height="50"/>
+        <TextBlock HorizontalAlignment="Left" TextElement.FontSize="22" Name="TextBlock_GameWinner" TextAlignment="Center" TextElement.FontStyle ="Italic"  TextElement.Foreground="Black" Margin="442,408,0,0" TextWrapping="Wrap" Text="Texas Hold'em" VerticalAlignment="Top" Width="395" Height="50"/>
         <Button Content="Determine best move" HorizontalAlignment="Left" Margin="210,12,0,0" Background="SandyBrown" VerticalAlignment="Top" Width="174" FontSize="16" Height="40"/>
         <Button Content="Calculate odds" HorizontalAlignment="Left" Margin="210,57,0,0" Background="SandyBrown" VerticalAlignment="Top" Width="174" FontSize="16" Height="40"/>
         <Button Content="Open Stats Panel" HorizontalAlignment="Left" Margin="210,104,0,0" Background="SandyBrown" VerticalAlignment="Top" Width="174" FontSize="16" Height="40"/>
@@ -100,6 +100,7 @@
         <Button Content="Strategy Guide" HorizontalAlignment="Left" Margin="389,58,0,0" Background="SandyBrown" VerticalAlignment="Top" Width="174" FontSize="16" Height="40"/>
         <Button Content="Math Guide" HorizontalAlignment="Left" Margin="389,103,0,0" Background="SandyBrown" VerticalAlignment="Top" Width="174" FontSize="16" Height="40"/>
         <TextBlock HorizontalAlignment="Left" FontSize="16" TextElement.Foreground="YellowGreen"  Margin="188,154,0,0" TextWrapping="Wrap" x:Name="TextBlock_MinBetMaxBet" Text="ERROR ERROR" VerticalAlignment="Top" Width="266"/>
+        <TextBlock FontSize="16" TextElement.Foreground="YellowGreen"  Margin="1020,10,10,0" TextWrapping="Wrap" Text="A project by Josh Glenen © 2017" VerticalAlignment="Top"/>
 
     </Grid>
 </Window>

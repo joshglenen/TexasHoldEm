@@ -16,13 +16,13 @@ namespace TexasHoldEm
         /// <returns>The value which can be compared to other values of different hands to find the winning hand</returns>
         ///<vals>
         ///high 14
-        ///one pair high 2 130 000
-        ///two pair high 4 131 300 
-        ///3oKind high 5 130 000
+        ///one pair high 2 140 000
+        ///two pair high 4 141 300 
+        ///3oKind high 5 140 000
         ///straight  6 000 000
         ///flush 7 000 000
-        ///f o kind high 8 130 000
-        ///FH 10 130 000
+        ///f o kind high 8 140 000
+        ///FH 10 141 300
         ///royal	100 000 000
         ///</vals>
         public static int Calculate(int[] values, string[] suits)

@@ -17,10 +17,8 @@ namespace TexasHoldEm
         public double _minBetFactor = 1;
 
         /// <summary>
-        /// 
+        /// Defines variables that influence TexasAI based on preset named characters 
         /// </summary>
-        /// <param name="difficulty"></param>
-        /// <param name="myGame"></param>
         /// <param name="personality">Granny, Timmy, Johnny, Jake</param>
         public Personality(string personality = null)
         {
