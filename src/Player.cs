@@ -91,9 +91,16 @@ namespace TexasHoldEm
         /// </summary>
         public void SetSuits(string[] cardSuits)
         {
-            for (int i = 0; i < NumCards; i++)
+            try
             {
-                _myHand[i].Suit = cardSuits[i];
+                for (int i = 0; i < cardSuits.Length; i++)
+                {
+                    _myHand[i].Suit = cardSuits[i];
+                }
+            }
+            catch
+            {
+                throw new Exception("Player -> SetSuits -> input number of cards " + cardSuits.Length + " / actual number of cards " + _myHand.Length);
             }
         }
 
@@ -155,6 +162,7 @@ namespace TexasHoldEm
         } //
 
         //TODO: fix raise, it will not resolve in an end of round.
+
         /// <summary>
         /// adds to a bet or creates one
         /// </summary>

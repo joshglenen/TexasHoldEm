@@ -15,8 +15,7 @@ using System.Windows.Controls;
 //https://en.wikipedia.org/wiki/Texas_hold_%27em#Strategy
 // App desktop icon credit -> Icon made by freepik from www.flaticon.com
 #endregion
-
-//TODO: finish UI structuring
+    
 
 namespace TexasHoldEm
 {
@@ -37,7 +36,6 @@ namespace TexasHoldEm
         {
             //TODO: collect data from xml instead of here
             string[] names = { "Jason", "Annie","Oswald" , "Cooper"};
-            int numPlayers = 4;
             int funds = 1000;
             int minBet = 10;
             int maxBet = 100;
@@ -46,8 +44,9 @@ namespace TexasHoldEm
             int bigBlind = 10;
             //TODO: make sure small blind < big blind, and minbet < twice max bet, and no limits means minbet and maxbet need not be assigned
 
-            myAI = new TexasAI();
-            myGame = new PokerGame(names, 5, numPlayers, funds, noLimits, smallBlind, bigBlind, minBet, maxBet);
+            ///TODO: error when numcards is not set to 5. Must fix
+            myGame = new PokerGame(names, 5, funds, noLimits, smallBlind, bigBlind, minBet, maxBet);
+            myAI = new TexasAI(myGame);
             UpdateTopLeftPanel();
             UpdateRightPanelStats();
             UpdateTopPanel();
@@ -150,7 +149,6 @@ namespace TexasHoldEm
             //generates a new hand and populates image frames.
             if ((myGame.Stage == "End") || (myGame.Stage == null))
             {
-                //TODO: needs restructuring as some methods need to occur at end of game and some at beginning.
                 myGame.TakeTurn("New Hand");
                 myGame.Stage = "Raise or Hold or Fold";
                 myAI.IsNewGame = true;
@@ -229,7 +227,7 @@ namespace TexasHoldEm
         private void PrintScores()
         {
             string buffer = "Game: " + myGame._gameNumber.ToString() + "\n";
-            for (int i = 0; i < myGame._numPlayers ; i++)
+            for (int i = 0; i < myGame._players.Length; i++)
             {
                 buffer += myGame._players[i].Name.ToString() + "'s Score: " + myGame._players[i].Score.ToString() + "\n";
             }
@@ -259,17 +257,17 @@ namespace TexasHoldEm
             TextBlock_Player3_Funds.Text = null;
             TextBlock_Player4_Name.Text = null;
             TextBlock_Player4_Funds.Text = null;
-            if (myGame._numPlayers > 2)
+            if (myGame._players.Length > 2)
             {
                 TextBlock_Player3_Funds.Text = "Funds: " + myGame._players[2].Funds.ToString();
                 TextBlock_Player3_Name.Text = myGame._players[2].Name.ToString();
             }
-            if (myGame._numPlayers > 3)
+            if (myGame._players.Length > 3)
             {
                 TextBlock_Player4_Funds.Text = "Funds: " + myGame._players[3].Funds.ToString();
                 TextBlock_Player4_Name.Text = myGame._players[3].Name.ToString();
             }
-            if (myGame._numPlayers > 4)
+            if (myGame._players.Length > 4)
             {
                 throw new Exception("Only supports 4 players");
             }
@@ -284,17 +282,17 @@ namespace TexasHoldEm
         {
             imgONE1.Source = new BitmapImage(new Uri(@myGame._players[1]._myHand[0].Asset));
             imgONE2.Source = new BitmapImage(new Uri(@myGame._players[1]._myHand[1].Asset));
-            if (myGame._numPlayers > 2)
+            if (myGame._players.Length > 2)
             {
                 imgTWO1.Source = new BitmapImage(new Uri(@myGame._players[2]._myHand[0].Asset));
                 imgTWO2.Source = new BitmapImage(new Uri(@myGame._players[2]._myHand[1].Asset));
             }
-            if (myGame._numPlayers > 3)
+            if (myGame._players.Length > 3)
             {
                 imgTHREE1.Source = new BitmapImage(new Uri(@myGame._players[3]._myHand[0].Asset));
                 imgTHREE2.Source = new BitmapImage(new Uri(@myGame._players[3]._myHand[1].Asset));
             }
-            if (myGame._numPlayers > 4)
+            if (myGame._players.Length > 4)
             {
                 throw new Exception("Only supports 4 players");
             }

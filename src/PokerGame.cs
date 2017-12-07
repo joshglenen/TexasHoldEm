@@ -10,15 +10,14 @@ namespace TexasHoldEm
     {
 
     #region session vars (do not change in a session)
-    public Player[] _players;
-    public Player _dealer;
-    public int _numPlayers;
-    public int _gameNumber;
-    public int _minBet;
-    public int _maxBet;
-    public bool _noLimits;
-    public int _smallBlind;
-    public int _bigBlind;
+        public Player[] _players { get; private set; }
+        public Player _dealer { get; private set; }
+        public int _gameNumber { get; private set; }
+        public int _minBet { get; private set; }
+        public int _maxBet { get; private set; }
+        public bool _noLimits { get; private set; }
+        public int _smallBlind { get; private set; }
+        public int _bigBlind { get; private set; }
     #endregion
 
     #region game vars (change every game in a session)
@@ -34,7 +33,7 @@ namespace TexasHoldEm
 
     #region Beginning of game
 
-    public PokerGame(string[] names = null, int numCards = 5, int NumPlayers = 2, int funds = 100, bool noLimits = false, int smallBlind = 5, int bigBlind = 10, int minBet = 10, int maxBet = 100)
+    public PokerGame(string[] names = null, int numCards = 5, int funds = 100, bool noLimits = false, int smallBlind = 5, int bigBlind = 10, int minBet = 10, int maxBet = 100)
     {
         _gameNumber = -1;
         _minBet = minBet;
@@ -42,10 +41,9 @@ namespace TexasHoldEm
         _smallBlind = smallBlind;
         _bigBlind = bigBlind;
         _noLimits = noLimits;
-        _players = new Player[NumPlayers];
+        _players = new Player[names.Length];
         _dealer = new Player("Dealer", 5, 0);
-        _numPlayers = NumPlayers;
-        for (int i = 0; i < NumPlayers; i++)
+        for (int i = 0; i < names.Length; i++)
         {
             _players[i] = new Player(names[i], numCards, funds);
         }
@@ -144,7 +142,7 @@ namespace TexasHoldEm
                 case "Match":
                     MatchBet(playerIndex);
                     int i = playerIndex;
-                    if (i == _numPlayers-1) i = 0;
+                    if (i == _players.Length - 1) i = 0;
                     else i++;
                     return i == _raisePlayerIndex; //check if all players have reacted to the raise bet
 
@@ -198,7 +196,7 @@ namespace TexasHoldEm
                 //check if one left
 
                 int k = 0;
-                for (int i = 0; i < _numPlayers; i++)
+                for (int i = 0; i < _players.Length; i++)
                 {
                     if (_players[i].Playing == true) { k++;}
                 }
@@ -328,7 +326,6 @@ namespace TexasHoldEm
     private int[] DetermineWinnerOfTie(int[] tieList)
     {
 
-        //TODO: when only a subset of players with the same score have the same max value, need to get thier id's and overwrite tieList IMPORTANT
         int[] PlayerHand = new int[2];
         int[] maxValues = new int[tieList.Length];
         List<int> newTieList = new List<int>();
@@ -338,12 +335,8 @@ namespace TexasHoldEm
         int maxCounter = 0;
         int winner = -1;
 
-        _players[tieList[0]].SetValues(new int[2] {14,13});
-        _players[tieList[1]].SetValues(new int[2] {14,13});
-
         //get player hands
-
-        //2,12  3,2
+        
         for (int i = 0; i < tieList.Length; i++)
         {
             PlayerHand = _players[tieList[i]].GetValues();
@@ -354,12 +347,11 @@ namespace TexasHoldEm
             }
             PlayerHand = PlayerHand.OrderByDescending(c => c).ToArray();
             maxValues[i] = PlayerHand[0];
-            //Console.WriteLine("TIE: " + _players[tieList[i]].Name + " has a hand of "  + PlayerHand[0].ToString() + PlayerHand[1].ToString());
+            Console.WriteLine("TIE: " + _players[tieList[i]].Name + " has a hand of "  + PlayerHand[0].ToString() + PlayerHand[1].ToString());
         }
 
         //determine if only one maximum
-
-        //12,2
+        
         maxValue = maxValues.Max();
         for (int i = 0; i < tieList.Length; i++)
         {
@@ -378,8 +370,7 @@ namespace TexasHoldEm
             returnBuffer[1] = 0;
             return returnBuffer;
         }
-
-        //TODO: getting bad value for console writeline at 349
+        
         //now check each second highest (of two) player card
         for (int i = 0; i < newTieList.Count; i++)
         {
@@ -417,7 +408,9 @@ namespace TexasHoldEm
         returnBuffer[0] = winner;
         returnBuffer[1] = 1;
         returnBuffer[2] = newTieList2.Count;
-        if (newTieList2.Count < 2) throw new IndexOutOfRangeException("Tie list cannot contain less than two people. Are the card values accurate?");
+        Console.WriteLine("maxcounter " + maxCounter.ToString()+ "/ tielength " + newTieList2.Count.ToString());
+        //TODO: fix
+        if (newTieList2.Count < 2) throw new IndexOutOfRangeException("Tie list cannot contain less than two people. Are the card values accurate? I'm still getting this exception but it only happens rarely. Need to fix!");
         for (int d = 0; d < newTieList2.Count; d++)
         {
             returnBuffer[3+d] = newTieList2[d];

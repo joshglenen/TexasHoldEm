@@ -2,7 +2,6 @@
 
 namespace TexasHoldEm
 {
-    //TODO: thorough test for bugs
     class CircularInt
     {
         public int _val { get; private set; }
@@ -41,11 +40,13 @@ namespace TexasHoldEm
         }
 
         //Operations within the class
+
         public bool Compare(CircularInt var)
         {
             if ((_val == var._val) && (_max == var._max) && (_min == var._min)) return true;
             return false;
         }
+
         public void Multiply(int multiplier)
         {
             _val *= multiplier;
@@ -69,9 +70,10 @@ namespace TexasHoldEm
                 }
             }
         }
+
         public void Divide(int divisor)
         {
-             _val = Convert.ToInt32(_val / divisor);
+            _val = Convert.ToInt32(_val / divisor);
             int buffer = 0;
             if (_val > _max)
             {
@@ -91,6 +93,31 @@ namespace TexasHoldEm
                 }
             }
         }
+
+        public void Equals(int value)
+        {
+            _val = value;
+
+            int buffer = 0;
+            if (_val > _max)
+            {
+                buffer = _val + _max - _min + 1;
+                while ((buffer > _max) || (buffer < _min))
+                {
+                    buffer = buffer + _max - _min + 1;
+                }
+            }
+
+            if (_val < _min)
+            {
+                buffer = _val - _max + _min - 1;
+                while ((buffer > _max) || (buffer < _min))
+                {
+                    buffer = buffer - _max + _min - 1;
+                }
+            }
+        }
+
         public void Multiply(double multiplier)
         {
             _val = Convert.ToInt32((double)_val * multiplier);
@@ -114,6 +141,7 @@ namespace TexasHoldEm
                 }
             }
         }
+
         public void Divide(double divisor)
         {
             _val = Convert.ToInt32((double)_val / divisor);
@@ -137,11 +165,13 @@ namespace TexasHoldEm
                 }
             }
         }
+
         public void Subtract(int decrement)
         {
             if (_val - decrement >= _min)
             {
                 _val -= decrement;
+                return;
             }
             int buffer = _val - decrement + _max - _min + 1;
             while ((buffer > _max) || (buffer < _min))
@@ -150,11 +180,13 @@ namespace TexasHoldEm
             }
             _val = buffer;
         }
+
         public void Add(int increment)
         {
             if (_val + increment <= _max)
             {
                 _val += increment;
+                return;
             }
             int buffer = _val + increment - _max + _min - 1;
             while ((buffer > _max) || (buffer < _min))
@@ -164,72 +196,9 @@ namespace TexasHoldEm
             _val = buffer;
         }
 
-        //Operators outside the class
-        public static int operator *(CircularInt left, CircularInt right)
+        public override string ToString()
         {
-            return left._val*right._val;
-        }
-        public static double operator /(CircularInt left, CircularInt right)
-        {
-            return left._val / right._val;
-        }
-        public static bool operator >(CircularInt left, CircularInt right)
-        {
-            if (left._val > right._val)
-            {
-                return true;
-            }
-            return false;
-        }
-        public static bool operator <(CircularInt left, CircularInt right)
-        {
-            if (left._val < right._val)
-            {
-                return true;
-            }
-            return false;
-        }
-        public static bool operator >=(CircularInt left, CircularInt right)
-        {
-            if (left._val >= right._val)
-            {
-                return true;
-            }
-            return false;
-        }
-        public static bool operator <=(CircularInt left, CircularInt right)
-        {
-            if (left._val <= right._val)
-            {
-                return true;
-            }
-            return false;
-        }
-        public static CircularInt operator -(CircularInt left, int decrement)
-        {
-            if (left._val - decrement >= left._max)
-            {
-                return new CircularInt(left._min, left._max, left._val - decrement);
-            }
-            int buffer = left._val - decrement + left._max - left._min + 1;
-            while ((buffer > left._max) || (buffer < left._min))
-            {
-                buffer = buffer + left._max - left._min + 1;
-            }
-            return new CircularInt(left._min, left._max, buffer);
-        }
-        public static CircularInt operator +(CircularInt left, int increment)
-        {
-            if(left._val + increment <= left._max)
-            {
-                return new CircularInt(left._min, left._max, left._val + increment);
-            }
-            int buffer = left._val + increment - left._max + left._min -1;
-            while ((buffer > left._max) || (buffer < left._min))
-            {
-                buffer = buffer - left._max + left._min -1;
-            }
-            return new CircularInt(left._min, left._max, buffer);
+            return _val.ToString();
         }
     }
 }

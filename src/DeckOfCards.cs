@@ -12,7 +12,7 @@ namespace TexasHoldEm
         {
             this.Value = Value; this.Suit = Suit; this.Asset = Asset;
         }
-    } //saves memory TODO: re-declare asset location
+    }
 
     class DeckOfCards 
     {

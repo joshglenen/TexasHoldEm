@@ -5,8 +5,6 @@ using System.Text;
 using System.Threading.Tasks;
 using static TexasHoldEm.UnsignedSortedFloatArray;
 
-//TODO: fundamental calculation implementation
-
 namespace TexasHoldEm
 {
     class TexasOdds
@@ -53,7 +51,7 @@ namespace TexasHoldEm
         /// </returns>
         public static UnsignedSortedFloatArray CheckWinner(PokerGame myGame)
         {
-            float[] buffer = new float[myGame._numPlayers];
+            float[] buffer = new float[myGame._players.Length];
             for (int i = 0; i < buffer.Length; i++)
             {
                 buffer[i] = CheckProbabilityOmnicient(myGame, i);
