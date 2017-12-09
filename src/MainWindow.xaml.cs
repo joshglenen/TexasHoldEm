@@ -61,23 +61,22 @@ namespace TexasHoldEm
         /// <param name="e"></param>
         private void Button_Click_Fold(object sender, RoutedEventArgs e)
         {
-            if ((myGame.Stage == "Match or Fold") || (myGame.Stage == "Raise or Hold or Fold"))
+            if ((myGame.Stage == "Raise or Match or Fold") || (myGame.Stage == "Raise or Hold or Fold"))
             {
                 int k = 0;
                 foreach (Player player in myGame._players)
                 {
                     if (player.Playing) { k++; }
                 }
-                if (k == 2)
+                myGame.TakeTurn("Fold");
+                if (k == 1)
                 {
-                    myGame.TakeTurn("Fold");
                     myGame.Stage = "End";
+                    myGame.EndGame();
                     UpdateEndGameUI();
-
                 }
                 else
                 {
-                    myGame.TakeTurn("Fold");
                     myGame.Stage = "Fold";
                     UpdateTopLeftPanel();
                     WaitForAI();
@@ -107,11 +106,11 @@ namespace TexasHoldEm
         /// <param name="e"></param>
         private void Button_Click_Match(object sender, RoutedEventArgs e)
         {
-            if (myGame.Stage == "Match or Fold")
+            if (myGame.Stage == "Raise or Match or Fold")
             {
-                myGame.Stage = "Match";
                 //Triggers when all players have responded to a raise.
-                if (myGame.TakeTurn("Match")) myGame.Stage = "Raise or Hold or Fold";
+                myGame.TakeTurn("Match");
+                myGame.Stage = "Match";
                 UpdateTopLeftPanel();
                 WaitForAI();
             }
@@ -124,7 +123,7 @@ namespace TexasHoldEm
         /// <param name="e"></param>
         private void Button_Click_Raise(object sender, RoutedEventArgs e)
         {
-            if (myGame.Stage == "Raise or Hold or Fold")
+            if ((myGame.Stage == "Raise or Hold or Fold")||(myGame.Stage == "Raise or Match or Fold"))
             {
                 //Checks if raise is appropriate.
                 if ((myGame._betAmountPlayerBuffer < myGame._minBet) || (myGame._betAmountPlayerBuffer > myGame._maxBet) || (myGame._betAmountPlayerBuffer > myGame._players[0].Funds))
@@ -151,7 +150,7 @@ namespace TexasHoldEm
             {
                 myGame.TakeTurn("New Hand");
                 myGame.Stage = "Raise or Hold or Fold";
-                myAI.IsNewGame = true;
+                myAI._newGame = true;
                 UpdateNewGameUI();
 
                 //Start game
@@ -166,24 +165,39 @@ namespace TexasHoldEm
         /// </summary>
         private void WaitForAI()
         {
-        myGame.Stage  = myAI.TexasStateMachineForAI(myGame.Stage, myGame);
-        if (myGame.Stage == null) { myGame.Stage = "Raise or Hold or Fold"; }
-        else if (myGame.Stage == "Raise or Hold or Fold") { DealerDrawNext();}
+            myGame.Stage  = myAI.TexasStateMachineForAI(myGame.Stage, myGame);
 
-        //AI must continue if player stops playing.
-        if(!myGame._players[0].Playing)
-        {
-            //waits until all dealer cards are drawn or all but one players have folded.
-            int k = 0;
-            foreach(Player player in myGame._players)
+            if (myGame.Stage == null) { myGame.Stage = "Raise or Hold or Fold"; }
+
+            else if (myGame.Stage == "End")
             {
-                 if (player.Playing) { k++; }
+                    myGame.EndGame();
+                    UpdateEndGameUI();
             }
+
+            else if (myGame.Stage == "Draw")
+            {
+                    DealerDrawNext();
+                    myGame.Stage = "Raise or Hold or Fold";
+            }
+
+            //Update GUI
+            UpdateTopPanel();
+
+            //AI must continue if player stops playing.
+            if (!myGame._players[0].Playing)
+            {
+                //waits until all dealer cards are drawn or all but one players have folded.
+                int k = 0;
+                foreach(Player player in myGame._players)
+                {
+                        if (player.Playing) { k++; }
+                }
                 if ((k!=0)&&(myGame._dealer.HandIndex<=4))
-            {
-                WaitForAI();
+                {
+                    WaitForAI();
+                }
             }
-        }
         }
 
         /// <summary>
@@ -219,6 +233,7 @@ namespace TexasHoldEm
         private void UpdateTopPanel()
         {
             TextBlock_MinBetMaxBet.Text = "Minimum Bet: " + myGame._minBet.ToString() + " Maximum Bet: " + myGame._maxBet.ToString();
+            TextBlock_Stage.Text = myGame.Stage;
         }
 
         /// <summary>
@@ -339,7 +354,7 @@ namespace TexasHoldEm
             PrintScores();
             UpdateTopLeftPanel();
             UpdateRightPanelStats();
-
+            UpdateTopPanel();
             //unique endgame updates
             TextBlock_GameWinner.Text = myGame._winner;
         }

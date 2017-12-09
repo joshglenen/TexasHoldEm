@@ -12,6 +12,7 @@ namespace TexasHoldEm
         public int Funds { get; private set; }
         public int OriginalFunds { get; private set; }
         public int Score;
+        public bool _roseBetThisTurn;
         public CardBase[] _myHand { get; private set; }
         public int HandIndex { get; private set; }
         public bool Playing;
@@ -27,6 +28,7 @@ namespace TexasHoldEm
         public Player(string name, int numberOfCardsInHand = 2, int funds = 100, string personality = null) : base(personality)
         {
             Score = 0;
+            _roseBetThisTurn = false;
             OriginalFunds = funds;
             Name = name;
             Funds = funds;

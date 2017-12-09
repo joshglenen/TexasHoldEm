@@ -2,6 +2,8 @@
 
 namespace TexasHoldEm
 {
+    //TODO: fix errors that occur in unused functions or remove them.
+
     class CircularInt
     {
         public int _val { get; private set; }
@@ -18,25 +20,7 @@ namespace TexasHoldEm
         {
             _val = value;
             _min = mimimum;
-            _max = maximum;
-            int buffer = 0;
-            if (_val > _max)
-            {
-                buffer = _val + _max - _min + 1;
-                while ((buffer > _max) || (buffer < _min))
-                {
-                    buffer = buffer + _max - _min + 1;
-                }
-            }
-
-            if (_val < _min)
-            {
-                buffer = _val - _max + _min - 1;
-                while ((buffer > _max) || (buffer < _min))
-                {
-                    buffer = buffer - _max + _min - 1;
-                }
-            }
+            _max = maximum; 
         }
 
         //Operations within the class
@@ -47,104 +31,15 @@ namespace TexasHoldEm
             return false;
         }
 
-        public void Multiply(int multiplier)
+        public bool CompareValue(CircularInt var)
         {
-            _val *= multiplier;
-
-            int buffer = 0;
-            if (_val > _max)
-            {
-                buffer = _val + _max - _min + 1;
-                while ((buffer > _max) || (buffer < _min))
-                {
-                    buffer = buffer + _max - _min + 1;
-                }
-            }
-
-            if (_val < _min)
-            {
-                buffer = _val - _max + _min - 1;
-                while ((buffer > _max) || (buffer < _min))
-                {
-                    buffer = buffer - _max + _min - 1;
-                }
-            }
-        }
-
-        public void Divide(int divisor)
-        {
-            _val = Convert.ToInt32(_val / divisor);
-            int buffer = 0;
-            if (_val > _max)
-            {
-                buffer = _val + _max - _min + 1;
-                while ((buffer > _max) || (buffer < _min))
-                {
-                    buffer = buffer + _max - _min + 1;
-                }
-            }
-
-            if (_val < _min)
-            {
-                buffer = _val - _max + _min - 1;
-                while ((buffer > _max) || (buffer < _min))
-                {
-                    buffer = buffer - _max + _min - 1;
-                }
-            }
+            if (_val == var._val) return true;
+            return false;
         }
 
         public void Equals(int value)
         {
             _val = value;
-
-            int buffer = 0;
-            if (_val > _max)
-            {
-                buffer = _val + _max - _min + 1;
-                while ((buffer > _max) || (buffer < _min))
-                {
-                    buffer = buffer + _max - _min + 1;
-                }
-            }
-
-            if (_val < _min)
-            {
-                buffer = _val - _max + _min - 1;
-                while ((buffer > _max) || (buffer < _min))
-                {
-                    buffer = buffer - _max + _min - 1;
-                }
-            }
-        }
-
-        public void Multiply(double multiplier)
-        {
-            _val = Convert.ToInt32((double)_val * multiplier);
-
-            int buffer = 0;
-            if (_val > _max)
-            {
-                buffer = _val + _max - _min + 1;
-                while ((buffer > _max) || (buffer < _min))
-                {
-                    buffer = buffer + _max - _min + 1;
-                }
-            }
-
-            if (_val < _min)
-            {
-                buffer = _val - _max + _min - 1;
-                while ((buffer > _max) || (buffer < _min))
-                {
-                    buffer = buffer - _max + _min - 1;
-                }
-            }
-        }
-
-        public void Divide(double divisor)
-        {
-            _val = Convert.ToInt32((double)_val / divisor);
 
             int buffer = 0;
             if (_val > _max)

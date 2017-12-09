@@ -101,6 +101,7 @@
         <Button Content="Math Guide" HorizontalAlignment="Left" Margin="389,103,0,0" Background="SandyBrown" VerticalAlignment="Top" Width="174" FontSize="16" Height="40"/>
         <TextBlock HorizontalAlignment="Left" FontSize="16" TextElement.Foreground="YellowGreen"  Margin="188,154,0,0" TextWrapping="Wrap" x:Name="TextBlock_MinBetMaxBet" Text="ERROR ERROR" VerticalAlignment="Top" Width="266"/>
         <TextBlock FontSize="16" TextElement.Foreground="YellowGreen"  Margin="1020,10,10,0" TextWrapping="Wrap" Text="A project by Josh Glenen © 2017" VerticalAlignment="Top"/>
+        <TextBlock HorizontalAlignment="Left" FontSize="16" TextElement.Foreground="YellowGreen"  Margin="498,154,0,0" TextWrapping="Wrap" x:Name="TextBlock_Stage" Text="ERROR ERROR" VerticalAlignment="Top" Width="266"/>
 
     </Grid>
 </Window>
