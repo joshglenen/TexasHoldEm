@@ -17,19 +17,22 @@ namespace TexasHoldEm
     class DeckOfCards 
     {
         
-        private string pathToDir;
+        private string assetFolder;
+        public string _cardBackLocation;
 
         public CardBase[] Deck {get; protected set;}
 
-        public DeckOfCards()
+        public DeckOfCards(string CardBackLocation = "\\cb\\blue.png")
         {
-            pathToDir = System.IO.Path.GetDirectoryName(System.Reflection.Assembly.GetExecutingAssembly().Location) + "\\Assets\\";
-            
+            string _pathToDirectory = System.IO.Path.GetDirectoryName(System.Reflection.Assembly.GetExecutingAssembly().Location);
+            assetFolder = _pathToDirectory + "\\Assets\\";
+            _cardBackLocation = assetFolder + CardBackLocation;
+
             Deck = new CardBase[52];
             int i = 0;
             for (int v = 1; v < 14; v++)
             {
-                string str = pathToDir;
+                string str = assetFolder;
                 str += v.ToString();
                 str += "h.png";
                 Deck[i] = new CardBase(v, "Hearts", str);
@@ -37,7 +40,7 @@ namespace TexasHoldEm
             }
             for (int v = 1; v < 14; v++)
             {
-                string str = pathToDir;
+                string str = assetFolder;
                 str += v.ToString();
                 str += "s.png";
                 Deck[i] = new CardBase(v, "Spades", str);
@@ -45,7 +48,7 @@ namespace TexasHoldEm
             }
             for (int v = 1; v < 14; v++)
             {
-                string str = pathToDir;
+                string str = assetFolder;
                 str += v.ToString();
                 str += "d.png";
                 Deck[i] = new CardBase(v, "Diamonds", str);
@@ -53,7 +56,7 @@ namespace TexasHoldEm
             }
             for (int v = 1; v < 14; v++)
             {
-                string str = pathToDir;
+                string str = assetFolder;
                 str += v.ToString();
                 str += "c.png";
                 Deck[i] = new CardBase(v, "Clubs", str);
@@ -85,6 +88,18 @@ namespace TexasHoldEm
                 return Card;
 
         }  //draws last element in array
+
+        protected CardBase Peek(int cardsIntoDeck = 1)
+        {
+            if ((Deck.Length < cardsIntoDeck) ||(cardsIntoDeck < 1))
+            {
+                Console.WriteLine("Can't peek into this deck with those parameters.");
+            }
+
+            CardBase Card = Deck[Deck.Length - cardsIntoDeck];
+            return Card;
+
+        }  //shows the value of a card for internal purposes
 
         private static void KnuthShuffle<T>(T[] array)
         {

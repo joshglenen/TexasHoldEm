@@ -8,15 +8,18 @@ namespace TexasHoldEm
     {
         public string Name;
         public static int NumCards = 0;
-        public int Bet { get; private set; }
         public int Funds { get; private set; }
         public int OriginalFunds { get; private set; }
         public int Score;
-        public bool _roseBetThisTurn;
         public CardBase[] _myHand { get; private set; }
+
+        private bool _tookTurn;
+        public int Bet { get; private set; }
         public int HandIndex { get; private set; }
         public bool Playing;
         public bool AllIn;
+        public bool TookTurn { get { return _tookTurn; } set { _tookTurn = value; Console.WriteLine("Player -> " + Name + " just finished thier turn."); } }
+        public bool RoseBetThisTurn;
 
         /// <summary>
         /// A person who is playing in a session of games.
@@ -28,7 +31,6 @@ namespace TexasHoldEm
         public Player(string name, int numberOfCardsInHand = 2, int funds = 100, string personality = null) : base(personality)
         {
             Score = 0;
-            _roseBetThisTurn = false;
             OriginalFunds = funds;
             Name = name;
             Funds = funds;
@@ -107,15 +109,6 @@ namespace TexasHoldEm
         }
 
         /// <summary>
-        /// Allows for bet to be made without changing the player's bet amount
-        /// </summary>
-        /// <param name="amount">amount to remove from player's funds</param>
-        public void BlindBet(int amount)
-        {
-            Funds -= amount;
-        }
-
-        /// <summary>
         /// Draws a card from a deck of cards
         /// </summary>
         /// <param name="Card">a card of type CardBase from the deck of type DeckOfCards</param>
@@ -132,6 +125,8 @@ namespace TexasHoldEm
         {
             Playing = true;
             AllIn = false;
+            TookTurn = false;
+            RoseBetThisTurn = false;
             _myHand = new CardBase[NumCards];
             HandIndex = 0;
             Bet = 0;
@@ -206,7 +201,6 @@ namespace TexasHoldEm
         /// <param name="income">value of the pool that is added to the player's funds</param>
         public void SetFunds(int income)
         {
-            OriginalFunds += income - Bet;
             Funds += income;
             Playing = false;
             AllIn = false;

@@ -32,13 +32,14 @@ namespace TexasHoldEm
 
     #region Beginning of game
 
-    public PokerGame(string[] names = null, int numCards = 5, int funds = 100, bool noLimits = false, int smallBlind = 5, int bigBlind = 10, int minBet = 10, int maxBet = 100)
+    public PokerGame(string[] names = null, int numCards = 5, int funds = 100, bool noLimits = false, int minBet = 10, int maxBet = 100)
     {
         _gameNumber = -1;
         _minBet = minBet;
+        if(maxBet<minBet*2) _maxBet = minBet * 2;
         _maxBet = maxBet;
-        _smallBlind = smallBlind;
-        _bigBlind = bigBlind;
+        _smallBlind = minBet/2;
+        _bigBlind = minBet;
         _noLimits = noLimits;
         _players = new Player[names.Length];
         _dealer = new Player("Dealer", 5, 0);
@@ -64,6 +65,8 @@ namespace TexasHoldEm
         foreach (Player player in _players)
         {
             player.ResetHand();
+            //TODO: decide what to do with scoring system
+            player.Score = 0;
             player.DrawCard(DrawTop());
             player.DrawCard(DrawTop());
         }
@@ -88,24 +91,31 @@ namespace TexasHoldEm
         ///
         public void DrawCard(int playerIndex)
         {
-            if (playerIndex == -1)
+            try
             {
+                _players[playerIndex].DrawCard(DrawTop());
+            }
+            catch
+            {
+                throw new IndexOutOfRangeException("Player can't draw card: " + _players[playerIndex].Name + " with a hand of " + _players[playerIndex].HandIndex);
+
+            }
+        }
+
+        public void DealerDrawCard()
+        {
+            if (_dealer.HandIndex == 0)
+            {
+                Console.WriteLine("Dealer drew flop");
+                _dealer.DrawCard(DrawTop());
+                _dealer.DrawCard(DrawTop());
                 _dealer.DrawCard(DrawTop());
             }
             else
             {
-                _players[playerIndex].DrawCard(DrawTop());
+                Console.WriteLine("Dealer drew");
+                _dealer.DrawCard(DrawTop());
             }
-        }
-
-        public void DrawCard(string playerName)
-        {
-            if (playerName == "Dealer") _dealer.DrawCard(DrawTop());
-            foreach (Player player in _players)
-            {
-                if (player.Name == playerName) player.DrawCard(DrawTop());
-            }
-
         }
 
         public void DrawCardPlayers()
@@ -196,14 +206,15 @@ namespace TexasHoldEm
 
         private void SmallBlind(int playerIndex)
         {
-            _players[playerIndex].BlindBet(_smallBlind);
+            _players[playerIndex].RaiseBet(_smallBlind);
             _pot += _smallBlind;
         }
 
         private void BigBlind(int playerIndex)
         {
-            _players[playerIndex].BlindBet(_bigBlind);
+            _players[playerIndex].RaiseBet(_bigBlind);
             _pot += _bigBlind;
+            _totalBetAmount = _bigBlind;
         }
 
         #endregion
@@ -220,7 +231,6 @@ namespace TexasHoldEm
 
         //determine winner and points
         scores = GetScores();
-        Console.WriteLine("NULL");
 
         //check for tie
         for (int i = 1; i < scores.Length; i++)

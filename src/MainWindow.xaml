@@ -43,8 +43,8 @@
                 </Grid>
             </Grid>
         </Border>
-        <Button Content="Hold" Click="Button_Click_Hold" HorizontalAlignment="Left" Margin="10,225,0,0" Background="{StaticResource Blue}" VerticalAlignment="Top" Width="173" FontSize="16" Height="40"/>
-        <Button Content="Match" Click="Button_Click_Match" HorizontalAlignment="Left" Margin="10,270,0,0" Background="{StaticResource Blue}" VerticalAlignment="Top" Width="173" FontSize="16" Height="40"/>
+        <Button Content="Check" Click="Button_Click_Hold" HorizontalAlignment="Left" Margin="10,225,0,0" Background="{StaticResource Blue}" VerticalAlignment="Top" Width="173" FontSize="16" Height="40"/>
+        <Button Content="Call" Click="Button_Click_Match" HorizontalAlignment="Left" Margin="10,270,0,0" Background="{StaticResource Blue}" VerticalAlignment="Top" Width="173" FontSize="16" Height="40"/>
         <Button Content="Raise:" Click="Button_Click_Raise" HorizontalAlignment="Left" Margin="10,315,0,0" Background="{StaticResource Blue}" VerticalAlignment="Top" Width="60" FontSize="16" Height="29"/>
         <Button Content="New Hand" TextElement.Foreground="WhiteSmoke" Click="Button_Click_NewHand" HorizontalAlignment="Left" Margin="10,180,0,0" Background="{StaticResource Red}" VerticalAlignment="Top" Width="173" FontSize="16" Height="40" RenderTransformOrigin="0.645,3.367"/>
         <TextBox HorizontalAlignment="Left" Padding="2,2,2,2"  Name="myRaise" Height="29" Margin="75,315,0,0" TextWrapping="Wrap"  Text="0" Background="{StaticResource Teal}" VerticalAlignment="Top" FontSize="16" Width="108" TextChanged="MyRaise_TextChanged" RenderTransformOrigin="0.925,-0.95"/>

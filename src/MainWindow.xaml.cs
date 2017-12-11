@@ -16,6 +16,7 @@ using System.Windows.Controls;
 // App desktop icon credit -> Icon made by freepik from www.flaticon.com
 #endregion
     
+    //TODO: add changable cardbacks with svg file support
 
 namespace TexasHoldEm
 {
@@ -30,6 +31,7 @@ namespace TexasHoldEm
             InitializePlayers();
             UpdateTopLeftPanel();
             UpdateRightPanelStats();
+
         }
 
         private void InitializePlayers()
@@ -40,12 +42,8 @@ namespace TexasHoldEm
             int minBet = 10;
             int maxBet = 100;
             bool noLimits = false;
-            int smallBlind = 5;
-            int bigBlind = 10;
-            //TODO: make sure small blind < big blind, and minbet < twice max bet, and no limits means minbet and maxbet need not be assigned
-
             ///TODO: error when numcards is not set to 5. Must fix
-            myGame = new PokerGame(names, 5, funds, noLimits, smallBlind, bigBlind, minBet, maxBet);
+            myGame = new PokerGame(names, 5, funds, noLimits, minBet, maxBet);
             myAI = new TexasAI(myGame);
             UpdateTopLeftPanel();
             UpdateRightPanelStats();
@@ -57,8 +55,6 @@ namespace TexasHoldEm
         /// <summary>
         /// sets stage to hold, updates myGame
         /// </summary>
-        /// <param name="sender"></param>
-        /// <param name="e"></param>
         private void Button_Click_Fold(object sender, RoutedEventArgs e)
         {
             if ((myGame.Stage == "Raise or Match or Fold") || (myGame.Stage == "Raise or Hold or Fold"))
@@ -79,7 +75,7 @@ namespace TexasHoldEm
                 {
                     myGame.Stage = "Fold";
                     UpdateTopLeftPanel();
-                    WaitForAI();
+                    WaitForTexasAI();
                 }
             }
         }
@@ -87,23 +83,19 @@ namespace TexasHoldEm
         /// <summary>
         /// sets stage to hold, updates myGame
         /// </summary>
-        /// <param name="sender"></param>
-        /// <param name="e"></param>
         private void Button_Click_Hold(object sender, RoutedEventArgs e)
         {
             if (myGame.Stage == "Raise or Hold or Fold")
             {
                 myGame.TakeTurn();
                 myGame.Stage = "Hold";
-                WaitForAI();
+                WaitForTexasAI();
             }
         }
 
         /// <summary>
         /// sets stage to match or raiseorholdorfold if player is the last to match, updates myGame
         /// </summary>
-        /// <param name="sender"></param>
-        /// <param name="e"></param>
         private void Button_Click_Match(object sender, RoutedEventArgs e)
         {
             if (myGame.Stage == "Raise or Match or Fold")
@@ -112,19 +104,19 @@ namespace TexasHoldEm
                 myGame.TakeTurn("Match");
                 myGame.Stage = "Match";
                 UpdateTopLeftPanel();
-                WaitForAI();
+                WaitForTexasAI();
             }
         }
 
         /// <summary>
         /// Sets stage to raise, updates myGame
         /// </summary>
-        /// <param name="sender"></param>
-        /// <param name="e"></param>
         private void Button_Click_Raise(object sender, RoutedEventArgs e)
         {
-            if ((myGame.Stage == "Raise or Hold or Fold")||(myGame.Stage == "Raise or Match or Fold"))
+            if (((myGame.Stage == "Raise or Hold or Fold")||(myGame.Stage == "Raise or Match or Fold"))&&(!myGame._players[0].RoseBetThisTurn))
             {
+                myGame._players[0].RoseBetThisTurn = true;
+
                 //Checks if raise is appropriate.
                 if ((myGame._betAmountPlayerBuffer < myGame._minBet) || (myGame._betAmountPlayerBuffer > myGame._maxBet) || (myGame._betAmountPlayerBuffer > myGame._players[0].Funds))
                 {
@@ -134,15 +126,13 @@ namespace TexasHoldEm
                 myGame.TakeTurn("Raise", 0, myGame._betAmountPlayerBuffer);
                 myGame.Stage = "Raise";
                 UpdateTopLeftPanel();
-                WaitForAI();
+                WaitForTexasAI();
             }
         }
 
         /// <summary>
         /// Reset's the game UI and sets the stage to its default.
         /// </summary>
-        /// <param name="sender"></param>
-        /// <param name="e"></param>
         private void Button_Click_NewHand(object sender, RoutedEventArgs e)
         {
             //generates a new hand and populates image frames.
@@ -150,11 +140,11 @@ namespace TexasHoldEm
             {
                 myGame.TakeTurn("New Hand");
                 myGame.Stage = "Raise or Hold or Fold";
-                myAI._newGame = true;
+                myAI.ResetAI();
                 UpdateNewGameUI();
 
                 //Start game
-                WaitForAI();
+                WaitForTexasAI();
                 UpdateTopLeftPanel();
                 UpdateRightPanelStats();
             }
@@ -163,23 +153,33 @@ namespace TexasHoldEm
         /// <summary>
         /// Allows AI to take it's turn and determine's the next state for the player
         /// </summary>
-        private void WaitForAI()
+        private void WaitForTexasAI()
         {
-            myGame.Stage  = myAI.TexasStateMachineForAI(myGame.Stage, myGame);
+            if (myGame.Stage != "End") myGame.Stage  = myAI.ExternalStateMachine(myGame.Stage, myGame);
 
-            if (myGame.Stage == null) { myGame.Stage = "Raise or Hold or Fold"; }
-
-            else if (myGame.Stage == "End")
+            if (myGame.Stage == "End")
             {
-                    myGame.EndGame();
-                    UpdateEndGameUI();
+                myGame.EndGame();
+                UpdateEndGameUI();
             }
 
             else if (myGame.Stage == "Draw")
             {
-                    DealerDrawNext();
-                    myGame.Stage = "Raise or Hold or Fold";
+                myGame._players[0].RoseBetThisTurn = false;
+                myGame.Stage = "Raise or Hold or Fold";
+                DealerDrawNext();
+                if (myGame.Stage == "End") return;
+                WaitForTexasAI();
             }
+
+            else if (myGame.Stage == "Draw, player goes first")
+            {
+                myGame._players[0].RoseBetThisTurn = false;
+                myGame.Stage = "Raise or Hold or Fold";
+                DealerDrawNext();
+            }
+
+            else if (myGame.Stage != "Raise or Hold or Fold") throw new NotImplementedException("Oops, how did you get here!");
 
             //Update GUI
             UpdateTopPanel();
@@ -195,33 +195,37 @@ namespace TexasHoldEm
                 }
                 if ((k!=0)&&(myGame._dealer.HandIndex<=4))
                 {
-                    WaitForAI();
+                    WaitForTexasAI();
                 }
             }
         }
 
         /// <summary>
-        /// Add's a card to the dealer's hand and updates the images. One of two ways to end the game.
+        /// New: Now only updates the UI and triggers the end of a game without a fold victory. Dealer's card is already drawn.
         /// </summary>
         private void DealerDrawNext()
         {
-            myGame.DrawCard(-1);
+            Console.WriteLine("A new card was drawn.");
             switch (myGame._dealer.HandIndex)
             {
-
-                case 3:
-                    imgDealer3.Source = new BitmapImage(new Uri(@myGame._dealer._myHand[2].Asset));
-                    break;
-
+                //the turn
                 case 4:
                     imgDealer4.Source = new BitmapImage(new Uri(@myGame._dealer._myHand[3].Asset));
                     break;
 
+                //the river
                 case 5:
                     imgDealer5.Source = new BitmapImage(new Uri(@myGame._dealer._myHand[4].Asset));
                     myGame.Stage = "End";
                     myGame.EndGame();
                     UpdateEndGameUI();
+                    break;
+                
+                //the flop
+                default:
+                    imgDealer1.Source = new BitmapImage(new Uri(@myGame._dealer._myHand[0].Asset));
+                    imgDealer2.Source = new BitmapImage(new Uri(@myGame._dealer._myHand[1].Asset));
+                    imgDealer3.Source = new BitmapImage(new Uri(@myGame._dealer._myHand[2].Asset));
                     break;
             }
         }
@@ -293,10 +297,35 @@ namespace TexasHoldEm
         /// <summary>
         /// updates right panel images
         /// </summary>
-        private void UpdateRightPanelImages()
+        private void UpdateRightPanelImagesHidden()
         {
-            imgONE1.Source = new BitmapImage(new Uri(@myGame._players[1]._myHand[0].Asset));
-            imgONE2.Source = new BitmapImage(new Uri(@myGame._players[1]._myHand[1].Asset));
+            imgONE1.Source = new BitmapImage(new Uri(@myGame._cardBackLocation));
+            imgONE2.Source = new BitmapImage(new Uri(@myGame._cardBackLocation));
+           // imgONE1.Source = new BitmapImage(new Uri(@myGame._players[1]._myHand[0].Asset));
+           // imgONE2.Source = new BitmapImage(new Uri(@myGame._players[1]._myHand[1].Asset));
+            if (myGame._players.Length > 2)
+            {
+                imgTWO1.Source = new BitmapImage(new Uri(@myGame._cardBackLocation));
+                imgTWO2.Source = new BitmapImage(new Uri(@myGame._cardBackLocation));
+                //imgTWO1.Source = new BitmapImage(new Uri(@myGame._players[2]._myHand[0].Asset));
+                //imgTWO2.Source = new BitmapImage(new Uri(@myGame._players[2]._myHand[1].Asset));
+            }
+            if (myGame._players.Length > 3)
+            {
+                imgTHREE1.Source = new BitmapImage(new Uri(@myGame._cardBackLocation));
+                imgTHREE2.Source = new BitmapImage(new Uri(@myGame._cardBackLocation));
+               // imgTHREE1.Source = new BitmapImage(new Uri(@myGame._players[3]._myHand[0].Asset));
+               // imgTHREE2.Source = new BitmapImage(new Uri(@myGame._players[3]._myHand[1].Asset));
+            }
+            if (myGame._players.Length > 4)
+            {
+                throw new Exception("Only supports 4 players");
+            }
+        }
+        private void UpdateRightPanelImagesShown()
+        {
+             imgONE1.Source = new BitmapImage(new Uri(@myGame._players[1]._myHand[0].Asset));
+             imgONE2.Source = new BitmapImage(new Uri(@myGame._players[1]._myHand[1].Asset));
             if (myGame._players.Length > 2)
             {
                 imgTWO1.Source = new BitmapImage(new Uri(@myGame._players[2]._myHand[0].Asset));
@@ -304,8 +333,8 @@ namespace TexasHoldEm
             }
             if (myGame._players.Length > 3)
             {
-                imgTHREE1.Source = new BitmapImage(new Uri(@myGame._players[3]._myHand[0].Asset));
-                imgTHREE2.Source = new BitmapImage(new Uri(@myGame._players[3]._myHand[1].Asset));
+                 imgTHREE1.Source = new BitmapImage(new Uri(@myGame._players[3]._myHand[0].Asset));
+                 imgTHREE2.Source = new BitmapImage(new Uri(@myGame._players[3]._myHand[1].Asset));
             }
             if (myGame._players.Length > 4)
             {
@@ -313,22 +342,23 @@ namespace TexasHoldEm
             }
         }
 
+
         /// <summary>
         /// updates main panel textblocks and images
         /// </summary>
         private void ResetMainPanel()
         {
             //clears extra image frames when starting a new game if a game had previously been played in a session.
-            if (imgDealer5.Source != null)
+            if (imgDealer1.Source != null)
             {
                 imgDealer5.Source = new BitmapImage();
                 imgDealer4.Source = new BitmapImage();
                 imgDealer3.Source = new BitmapImage();
+                imgDealer2.Source = new BitmapImage();
+                imgDealer1.Source = new BitmapImage();
             }
 
             TextBlock_GameWinner.Text = "Texas Hold'em";
-            imgDealer1.Source = new BitmapImage(new Uri(@myGame._dealer._myHand[0].Asset));
-            imgDealer2.Source = new BitmapImage(new Uri(@myGame._dealer._myHand[1].Asset));
             imgMain1.Source = new BitmapImage(new Uri(@myGame._players[0]._myHand[0].Asset));
             imgMain2.Source = new BitmapImage(new Uri(@myGame._players[0]._myHand[1].Asset));
         }
@@ -338,7 +368,14 @@ namespace TexasHoldEm
         /// </summary>
         private void UpdateTopLeftPanel()
         {
-            TextBlock_GameNumberCounter.Text = "Game " + myGame._gameNumber.ToString();
+            if (myGame._gameNumber < 1)
+            {
+                TextBlock_GameNumberCounter.Text = "Welcome";
+            }
+            else
+            {
+                TextBlock_GameNumberCounter.Text = "Game " + myGame._gameNumber.ToString();
+            }
             TextBlock_CurrentPlayerName.Text =  myGame._players[0].Name.ToString();
             TextBlock_Game_Pot.Text = "Current Pot: " +  myGame._pot.ToString();
             TextBlock_Player1_CurrentBet.Text = "Current Bet: " + myGame._players[0].Bet.ToString();
@@ -355,6 +392,8 @@ namespace TexasHoldEm
             UpdateTopLeftPanel();
             UpdateRightPanelStats();
             UpdateTopPanel();
+            UpdateRightPanelImagesShown();
+
             //unique endgame updates
             TextBlock_GameWinner.Text = myGame._winner;
         }
@@ -367,7 +406,7 @@ namespace TexasHoldEm
             MyRaise_TextChanged(this, null);
             ResetMainPanel();
             UpdateTopLeftPanel();
-            UpdateRightPanelImages();
+            UpdateRightPanelImagesHidden();
             UpdateTopPanel();
         }
 
