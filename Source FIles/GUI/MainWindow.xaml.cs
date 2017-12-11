@@ -165,6 +165,7 @@ namespace TexasHoldEm
 
             else if (myGame.Stage == "Draw")
             {
+                UpdateTopLeftPanel();
                 myGame._players[0].RoseBetThisTurn = false;
                 myGame.Stage = "Raise or Hold or Fold";
                 DealerDrawNext();
@@ -174,12 +175,18 @@ namespace TexasHoldEm
 
             else if (myGame.Stage == "Draw, player goes first")
             {
+                UpdateTopLeftPanel();
                 myGame._players[0].RoseBetThisTurn = false;
                 myGame.Stage = "Raise or Hold or Fold";
                 DealerDrawNext();
             }
+            else if (myGame.Stage == "Raise or Match or Fold")
+            {
+                UpdateTopLeftPanel();
+                UpdateLeftPanel("AI RAISED");
+            }
 
-            else if (myGame.Stage != "Raise or Hold or Fold") throw new NotImplementedException("Oops, how did you get here!");
+            else if (myGame.Stage != "Raise or Hold or Fold") throw new Exception("Oops, how did you get here!");
 
             //Update GUI
             UpdateTopPanel();
@@ -376,6 +383,7 @@ namespace TexasHoldEm
             {
                 TextBlock_GameNumberCounter.Text = "Game " + myGame._gameNumber.ToString();
             }
+            TextBlock_totalBetAmount.Text = (myGame._totalBetAmount - myGame._players[0].Bet).ToString();
             TextBlock_CurrentPlayerName.Text =  myGame._players[0].Name.ToString();
             TextBlock_Game_Pot.Text = "Current Pot: " +  myGame._pot.ToString();
             TextBlock_Player1_CurrentBet.Text = "Current Bet: " + myGame._players[0].Bet.ToString();
@@ -391,6 +399,7 @@ namespace TexasHoldEm
             PrintScores();
             UpdateTopLeftPanel();
             UpdateRightPanelStats();
+            UpdatePlayerStatuses();
             UpdateTopPanel();
             UpdateRightPanelImagesShown();
 
@@ -398,6 +407,12 @@ namespace TexasHoldEm
             TextBlock_GameWinner.Text = myGame._winner;
         }
 
+        private void UpdatePlayerStatuses()
+        {
+            TextBlock_Player4_status.Text = "Not Implemented";
+            TextBlock_Player3_status.Text = "Not Implemented";
+            TextBlock_Player2_status.Text = "Not Implemented";
+        }
         /// <summary>
         /// Updates the UI when the game starts
         /// </summary>
@@ -406,6 +421,7 @@ namespace TexasHoldEm
             MyRaise_TextChanged(this, null);
             ResetMainPanel();
             UpdateTopLeftPanel();
+            UpdatePlayerStatuses();
             UpdateRightPanelImagesHidden();
             UpdateTopPanel();
         }
@@ -419,11 +435,17 @@ namespace TexasHoldEm
         {
             if(myGame != null) Int32.TryParse(myRaise.Text, out myGame._betAmountPlayerBuffer);
 
-        } 
+        }
+
 
         #endregion
 
+        //Extra, not yet categorized
 
+        private void Button_Click(object sender, RoutedEventArgs e)
+        {
+             Console.WriteLine(myAI.ToString() + myGame.ToString());
+        }
     }
 }
 
