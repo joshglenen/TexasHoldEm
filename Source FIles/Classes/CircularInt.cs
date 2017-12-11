@@ -40,24 +40,15 @@ namespace TexasHoldEm
         public void Equals(int value)
         {
             _val = value;
-
-            int buffer = 0;
+            
             if (_val > _max)
             {
-                buffer = _val + _max - _min + 1;
-                while ((buffer > _max) || (buffer < _min))
-                {
-                    buffer = buffer + _max - _min + 1;
-                }
+                _val = _min;
             }
 
             if (_val < _min)
             {
-                buffer = _val - _max + _min - 1;
-                while ((buffer > _max) || (buffer < _min))
-                {
-                    buffer = buffer - _max + _min - 1;
-                }
+                _val = _max;
             }
         }
 

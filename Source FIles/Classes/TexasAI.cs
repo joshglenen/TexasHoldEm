@@ -74,7 +74,17 @@ namespace TexasHoldEm
                     if (_newGame)
                     {
                         _newGame = false;
-                        PlayersTurn.Equals(PlayerGoesFirst);
+
+                        //remove non playing players.
+                        PlayerGoesFirst = new CircularInt(myGame._players.Length - 1,0, PlayerGoesFirst._val);
+                        PlayersTurn = new CircularInt(myGame._players.Length - 1,0, PlayersTurn._val);
+                        while (myGame._players.Length < PlayerGoesFirst._val)
+                        {
+                            PlayerGoesFirst.Add(1);
+                            Console.Write("&");
+                        }
+
+                        PlayersTurn.Equals(PlayerGoesFirst._val);
                         _dealerOfRound = PlayersTurn._val;
                         PlayerGoesFirst.Add(1);
                         PlayersTurn.Add(1);
@@ -229,21 +239,24 @@ namespace TexasHoldEm
 
             int raise_amount = myGame._totalBetAmount - myGame._players[PlayersTurn._val].Bet;
 
-            if (ShouldRaise(myGame, PlayersTurn._val, raise_amount))
+            //all in's not need to match, and cannot raise
+            if(!myGame._players[PlayersTurn._val].AllIn)
             {
-                AI_Raise(myGame, PlayersTurn._val, DetermineRaiseAmount(myGame, PlayersTurn._val));
-            }
+                if (ShouldRaise(myGame, PlayersTurn._val, raise_amount))
+                {
+                    AI_Raise(myGame, PlayersTurn._val, DetermineRaiseAmount(myGame, PlayersTurn._val));
+                }
 
-            else if (ShouldFold(myGame, PlayersTurn._val, raise_amount))
-            {
-                AI_Fold(myGame, PlayersTurn._val);
-            }
+                else if (ShouldFold(myGame, PlayersTurn._val, raise_amount))
+                {
+                    AI_Fold(myGame, PlayersTurn._val);
+                }
 
-            else
-            {
-                AI_Match(myGame, PlayersTurn._val);
+                else
+                {
+                    AI_Match(myGame, PlayersTurn._val);
+                }
             }
-
             //repeat full round of raise checks
             NextPlayerTurn(myGame);
             RaiseOrMatchOrFold(myGame);
@@ -265,7 +278,7 @@ namespace TexasHoldEm
             while (!myGame._players[PlayersTurn._val].Playing)
             {
                 PlayersTurn.Add(1);
-                Console.Write("&");
+                Console.WriteLine("&");
             }
         }
 
@@ -278,7 +291,7 @@ namespace TexasHoldEm
         /// </summary>
         private bool ShouldRaise(PokerGame myGame, int playerIndex, int amount = 0)
         {
-            if (!myGame._players[playerIndex].RoseBetThisTurn)
+            if ((!myGame._players[playerIndex].RoseBetThisTurn)&&(!myGame._players[playerIndex].AllIn))
             {
                 if (myGame._players[playerIndex]._random_decisions)
                 {
@@ -288,7 +301,7 @@ namespace TexasHoldEm
                 else
                 {
                     //TODO:
-                    throw new NotImplementedException("personality choices not yet defined, only framework exists");
+                    throw new Exception("personality choices not yet defined, only framework exists");
                 }
             }
             return false;
@@ -303,12 +316,12 @@ namespace TexasHoldEm
             if (myGame._players[playerIndex]._random_decisions)
             {
                 int i = randomInteger.Next(1, 10);
-                if (i % 10 == 0) return true;
+                if (i % 5 == 0) return true;
             }
             else
             {
                 //TODO:
-                throw new NotImplementedException("personality choices not yet defined, only framework exists");
+                throw new Exception("personality choices not yet defined, only framework exists");
             }
             return false;
         }

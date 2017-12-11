@@ -18,7 +18,9 @@ namespace TexasHoldEm
     {
         
         private string assetFolder;
-        public string _cardBackLocation;
+        public string _cardBackMain;
+        public string _cardBackFold;
+        public string _cardBackGameOver;
 
         public CardBase[] Deck {get; protected set;}
 
@@ -26,7 +28,9 @@ namespace TexasHoldEm
         {
             string _pathToDirectory = System.IO.Path.GetDirectoryName(System.Reflection.Assembly.GetExecutingAssembly().Location);
             assetFolder = _pathToDirectory + "\\Assets\\";
-            _cardBackLocation = assetFolder + CardBackLocation;
+            _cardBackMain = assetFolder + CardBackLocation;
+            _cardBackFold = assetFolder + "\\cb\\fold.png";
+            _cardBackGameOver = assetFolder + "\\cb\\gameover.png";
 
             Deck = new CardBase[52];
             int i = 0;

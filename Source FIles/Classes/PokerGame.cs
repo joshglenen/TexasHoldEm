@@ -56,7 +56,7 @@ namespace TexasHoldEm
     {
         _winner = "No Winner";
         _gameNumber++;
-        NewDeck();
+        //NewDeck();
         _pot = 0;
         _totalBetAmount = 0;
         _betAmountPlayerBuffer = 0;
@@ -64,16 +64,31 @@ namespace TexasHoldEm
 
         foreach (Player player in _players)
         {
-            player.ResetHand();
+            //Remove players that are no longer playing
+            if(player.Funds<_bigBlind)
+            {
+                    List <Player> buffer = new List<Player>();
+                    for(int i=0;i< _players.Length; i++)
+                    {
+                        if(player != _players[i]) buffer.Add(_players[i]);
+                    }
+                    if (buffer.Count != _players.Length - 1) throw new Exception("Player counts not matching after player removed from session.");
+                    _players = new Player[buffer.Count];
+                    _players = buffer.ToArray();
+                    buffer = null;
+                    Console.WriteLine("Player successfully removed from the game.");
+                    break;
+            }
+
             //TODO: decide what to do with scoring system
             player.Score = 0;
+
+            player.ResetHand();
             player.DrawCard(DrawTop());
             player.DrawCard(DrawTop());
         }
-        _dealer.ResetHand();
-        _dealer.DrawCard(DrawTop());
-        _dealer.DrawCard(DrawTop());
 
+        _dealer.ResetHand();
     }
     private void NewDeck()
     {
@@ -434,8 +449,9 @@ namespace TexasHoldEm
         maxCounter = 0;
         winner = -1;
         maxValue = maxValues.Max();
-        for (int i = 0; i < newTieList.Count; i++)
-        {
+            for (int i = 0; i < newTieList.Count; i++)
+            {
+                Console.WriteLine("Maxvalue of second card in hand for " + i.ToString() + " is " + maxValues[i].ToString());
             if (maxValues[i] == maxValue)
             {
                 winner = newTieList[i];
@@ -456,7 +472,7 @@ namespace TexasHoldEm
         returnBuffer[0] = winner;
         returnBuffer[1] = 1;
         returnBuffer[2] = newTieList2.Count;
-        Console.WriteLine("maxcounter " + maxCounter.ToString()+ "/ tielength " + newTieList2.Count.ToString());
+        Console.WriteLine("maxcounter " + maxCounter.ToString()+ "/ maxValue " + maxValue.ToString() +  "/ tielength " + newTieList2.Count.ToString());
         //TODO: fix
         if (newTieList2.Count < 2) throw new IndexOutOfRangeException("Tie list cannot contain less than two people. Are the card values accurate? I'm still getting this exception but it only happens rarely. Need to fix!");
         for (int d = 0; d < newTieList2.Count; d++)

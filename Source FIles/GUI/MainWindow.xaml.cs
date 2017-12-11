@@ -306,23 +306,41 @@ namespace TexasHoldEm
         /// </summary>
         private void UpdateRightPanelImagesHidden()
         {
-            imgONE1.Source = new BitmapImage(new Uri(@myGame._cardBackLocation));
-            imgONE2.Source = new BitmapImage(new Uri(@myGame._cardBackLocation));
-           // imgONE1.Source = new BitmapImage(new Uri(@myGame._players[1]._myHand[0].Asset));
-           // imgONE2.Source = new BitmapImage(new Uri(@myGame._players[1]._myHand[1].Asset));
+            //only change AI hands, not the players
+            
+            if (myGame._players.Length > 1)
+            {
+                imgONE1.Source = new BitmapImage(new Uri(@myGame._cardBackMain));
+                imgONE2.Source = new BitmapImage(new Uri(@myGame._cardBackMain));
+            }
+            else
+            {
+                //TODO: merge with above method, or separte them as done previously.
+                //TODO: Win screen update
+                TextBlock_GameWinner.Text = "You beat all the pther players!";
+                TextBlock_Player2_status.Text = null;
+            }
             if (myGame._players.Length > 2)
             {
-                imgTWO1.Source = new BitmapImage(new Uri(@myGame._cardBackLocation));
-                imgTWO2.Source = new BitmapImage(new Uri(@myGame._cardBackLocation));
-                //imgTWO1.Source = new BitmapImage(new Uri(@myGame._players[2]._myHand[0].Asset));
-                //imgTWO2.Source = new BitmapImage(new Uri(@myGame._players[2]._myHand[1].Asset));
+                imgTWO1.Source = new BitmapImage(new Uri(@myGame._cardBackMain));
+                imgTWO2.Source = new BitmapImage(new Uri(@myGame._cardBackMain));
+            }
+            else
+            {
+                imgTWO1.Source = new BitmapImage(new Uri(@myGame._cardBackGameOver));
+                imgTWO2.Source = new BitmapImage(new Uri(@myGame._cardBackGameOver));
+                TextBlock_Player3_status.Text = null;
             }
             if (myGame._players.Length > 3)
             {
-                imgTHREE1.Source = new BitmapImage(new Uri(@myGame._cardBackLocation));
-                imgTHREE2.Source = new BitmapImage(new Uri(@myGame._cardBackLocation));
-               // imgTHREE1.Source = new BitmapImage(new Uri(@myGame._players[3]._myHand[0].Asset));
-               // imgTHREE2.Source = new BitmapImage(new Uri(@myGame._players[3]._myHand[1].Asset));
+                imgTHREE1.Source = new BitmapImage(new Uri(@myGame._cardBackMain));
+                imgTHREE2.Source = new BitmapImage(new Uri(@myGame._cardBackMain));
+            }
+            else
+            {
+                imgTHREE1.Source = new BitmapImage(new Uri(@myGame._cardBackGameOver));
+                imgTHREE2.Source = new BitmapImage(new Uri(@myGame._cardBackGameOver));
+                TextBlock_Player4_status.Text = null;
             }
             if (myGame._players.Length > 4)
             {
@@ -331,17 +349,37 @@ namespace TexasHoldEm
         }
         private void UpdateRightPanelImagesShown()
         {
-             imgONE1.Source = new BitmapImage(new Uri(@myGame._players[1]._myHand[0].Asset));
-             imgONE2.Source = new BitmapImage(new Uri(@myGame._players[1]._myHand[1].Asset));
-            if (myGame._players.Length > 2)
+            //only change AI hands, not the players
+
+            if ((myGame._players.Length > 1) && (myGame._players[1]._myHand!=null))
+            {
+                imgONE1.Source = new BitmapImage(new Uri(@myGame._players[1]._myHand[0].Asset));
+                imgONE2.Source = new BitmapImage(new Uri(@myGame._players[1]._myHand[1].Asset));
+            }
+            else if (myGame._players.Length > 1)
+            {
+                imgONE1.Source = new BitmapImage(new Uri(@myGame._cardBackFold));
+                imgONE2.Source = new BitmapImage(new Uri(@myGame._cardBackFold));
+            }
+            if ((myGame._players.Length > 2) && (myGame._players[2]._myHand != null))
             {
                 imgTWO1.Source = new BitmapImage(new Uri(@myGame._players[2]._myHand[0].Asset));
                 imgTWO2.Source = new BitmapImage(new Uri(@myGame._players[2]._myHand[1].Asset));
             }
-            if (myGame._players.Length > 3)
+            else if (myGame._players.Length > 2)
+            {
+                imgTWO1.Source = new BitmapImage(new Uri(@myGame._cardBackFold));
+                imgTWO2.Source = new BitmapImage(new Uri(@myGame._cardBackFold));
+            }
+            if ((myGame._players.Length > 3) && (myGame._players[3]._myHand != null))
             {
                  imgTHREE1.Source = new BitmapImage(new Uri(@myGame._players[3]._myHand[0].Asset));
                  imgTHREE2.Source = new BitmapImage(new Uri(@myGame._players[3]._myHand[1].Asset));
+            }
+            else if (myGame._players.Length > 3)
+            {
+                imgTHREE1.Source = new BitmapImage(new Uri(@myGame._cardBackFold));
+                imgTHREE2.Source = new BitmapImage(new Uri(@myGame._cardBackFold));
             }
             if (myGame._players.Length > 4)
             {
